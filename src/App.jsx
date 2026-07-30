@@ -13,12 +13,8 @@ import {
   Sun,
   Moon,
   Info,
-  ArrowUpRight,
-  ChevronRight,
   Wallet,
-  Calendar,
-  Percent,
-  RefreshCw
+  Calendar
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -34,55 +30,66 @@ import {
 } from 'recharts';
 
 const INCOME_PRESETS = [
-  { label: 'Entry Level', value: 22500 },
-  { label: 'Mid Professional', value: 45000 },
-  { label: 'Senior Role', value: 85000 },
-  { label: 'Management', value: 150000 },
-  { label: 'Executive', value: 250000 },
+  { label: 'Entry Level', value: 22500, note: 'Fresh Grad / BPO Start' },
+  { label: 'Mid Professional', value: 45000, note: '3-5 Yrs Experience' },
+  { label: 'Senior Specialist', value: 85000, note: '5-8 Yrs Experience' },
+  { label: 'Manager / Lead', value: 140000, note: 'Department Lead' },
+  { label: 'Executive / Tech', value: 250000, note: 'Senior Tech / Exec' },
 ];
 
 export default function App() {
   // Theme state
   const [isDark, setIsDark] = useState(true);
 
-  // Inputs
-  const [monthlyIncome, setMonthlyIncome] = useState(22500);
+  // Inputs - Accurate baseline defaults
+  const [monthlyIncome, setMonthlyIncome] = useState(22500); // ₱22,500 baseline
   const [currencySymbol, setCurrencySymbol] = useState('₱');
   
-  // Custom Ratios
+  // Allocation Ratios (Standard 50 / 30 / 20)
   const [customMode, setCustomMode] = useState(false);
   const [needsPct, setNeedsPct] = useState(50);
   const [wantsPct, setWantsPct] = useState(30);
   const [investPct, setInvestPct] = useState(20);
 
-  // Simulation inputs
-  const [currentSavings, setCurrentSavings] = useState(50000);
-  const [annualReturnRate, setAnnualReturnRate] = useState(8);
+  // Simulation inputs with accurate real-world defaults
+  const [currentSavings, setCurrentSavings] = useState(20000); // Realistic starter savings
+  const [annualReturnRate, setAnnualReturnRate] = useState(7.0); // Realistic 7.0% p.a. (Pag-IBIG MP2 / S&P 500 average)
+  const [inflationRate, setInflationRate] = useState(3.0); // 3% average PH inflation
+  const [adjustForInflation, setAdjustForInflation] = useState(true);
   const [currentAge, setCurrentAge] = useState(25);
 
   // UI state
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState('breakdown'); // 'breakdown' | 'fire' | 'categories'
+  const [activeTab, setActiveTab] = useState('breakdown'); // 'breakdown' | 'fire'
 
-  // Allocation ratios
+  // Active ratios
   const activeNeedsPct = customMode ? needsPct : 50;
   const activeWantsPct = customMode ? wantsPct : 30;
   const activeInvestPct = customMode ? investPct : 20;
 
-  // Calculations
+  // Exact Core Calculations
   const needsAmount = useMemo(() => monthlyIncome * (activeNeedsPct / 100), [monthlyIncome, activeNeedsPct]);
   const wantsAmount = useMemo(() => monthlyIncome * (activeWantsPct / 100), [monthlyIncome, activeWantsPct]);
   const investAmount = useMemo(() => monthlyIncome * (activeInvestPct / 100), [monthlyIncome, activeInvestPct]);
   
+  // Core Requested Metrics:
+  // 1. FIRE Target Goal: Monthly Income * 300 (Rule of 300 = 25 yrs of income / 4% SWR)
   const fireTargetGoal = useMemo(() => monthlyIncome * 300, [monthlyIncome]);
-  const emergencyFund = useMemo(() => (monthlyIncome * 0.50) * 6, [monthlyIncome]);
 
-  // Projection timeline
+  // 2. Emergency Fund (6 Months of Needs): (Monthly Income * 0.50) * 6
+  const emergencyFund = useMemo(() => (monthlyIncome * (activeNeedsPct / 100)) * 6, [monthlyIncome, activeNeedsPct]);
+
+  // Effective real rate of return (Nominal ROI minus Inflation if toggled)
+  const effectiveReturnRate = useMemo(() => {
+    return adjustForInflation ? Math.max(0.5, annualReturnRate - inflationRate) : annualReturnRate;
+  }, [annualReturnRate, inflationRate, adjustForInflation]);
+
+  // Projection timeline calculation
   const projectionData = useMemo(() => {
     const data = [];
-    const monthlyReturnRate = annualReturnRate / 100 / 12;
+    const monthlyReturnRate = effectiveReturnRate / 100 / 12;
     let portfolio = currentSavings;
-    const maxYears = 40;
+    const maxYears = 45;
 
     data.push({ year: 0, age: currentAge, portfolio: Math.round(portfolio) });
 
@@ -97,26 +104,31 @@ export default function App() {
       }
     }
     return data;
-  }, [investAmount, currentSavings, annualReturnRate, currentAge]);
+  }, [investAmount, currentSavings, effectiveReturnRate, currentAge]);
 
+  // Exact Years to reach FIRE
   const yearsToFire = useMemo(() => {
     const match = projectionData.find((d) => d.portfolio >= fireTargetGoal);
-    return match ? match.year : '> 40';
+    return match ? match.year : '> 45';
   }, [projectionData, fireTargetGoal]);
+
+  const targetAge = useMemo(() => {
+    return typeof yearsToFire === 'number' ? currentAge + yearsToFire : 'N/A';
+  }, [yearsToFire, currentAge]);
 
   const formatCurrency = (val) => `${currencySymbol}${Math.round(val).toLocaleString('en-US')}`;
 
   const handleCopySummary = () => {
-    const text = `FIRE & Budgeting Financial Plan
+    const text = `FIRE & Budgeting Plan (50/20/30 Rule)
 ----------------------------------
 Monthly Net Income: ${formatCurrency(monthlyIncome)}
-- Needs (${activeNeedsPct}%): ${formatCurrency(needsAmount)}/mo
-- Wants (${activeWantsPct}%): ${formatCurrency(wantsAmount)}/mo
-- Investment (${activeInvestPct}%): ${formatCurrency(investAmount)}/mo
+- 50% Needs (Living): ${formatCurrency(needsAmount)}/mo
+- 30% Wants (Discretionary): ${formatCurrency(wantsAmount)}/mo
+- 20% Investing (FIRE): ${formatCurrency(investAmount)}/mo
 ----------------------------------
-Emergency Reserve (6 Months): ${formatCurrency(emergencyFund)}
-FIRE Target Goal (Rule of 300): ${formatCurrency(fireTargetGoal)}
-Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
+🛡️ Emergency Reserve (6 Mo Needs): ${formatCurrency(emergencyFund)}
+🎯 FIRE Target (Rule of 300): ${formatCurrency(fireTargetGoal)}
+⏱️ Target FIRE Timeframe: ${yearsToFire} Years (Retire at Age ${targetAge} with ${effectiveReturnRate}% net ROI)`;
 
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -132,19 +144,19 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
   return (
     <div className={`min-h-screen font-sans ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       
-      {/* Top Professional Navigation */}
+      {/* Navigation Bar */}
       <header className={`border-b sticky top-0 z-30 backdrop-blur-md ${isDark ? 'bg-slate-950/90 border-slate-800' : 'bg-white/90 border-slate-200'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-1 items-center justify-center text-emerald-400 font-bold">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold">
               <Flame className="w-4 h-4" />
             </div>
             <div>
               <h1 className="text-base font-bold tracking-tight flex items-center gap-2">
-                FIRE Financial Planner
+                50/20/30 FIRE Calculator
                 <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
-                  50/20/30 Model
+                  Rule of 300
                 </span>
               </h1>
             </div>
@@ -162,7 +174,7 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
               }`}
             >
               {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
-              {copied ? 'Summary Copied' : 'Export Plan'}
+              {copied ? 'Copied to Clipboard' : 'Export Plan'}
             </button>
 
             <button
@@ -184,14 +196,14 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {/* Executive KPI Summary Strip */}
+        {/* Metric Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           
-          {/* KPI 1: FIRE Target */}
+          {/* Card 1: FIRE Target */}
           <div className={`p-5 rounded-xl border ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                FIRE Target Portfolio
+                FIRE Target Goal
               </span>
               <div className="p-1.5 rounded bg-emerald-500/10 text-emerald-400">
                 <Flame className="w-4 h-4" />
@@ -202,11 +214,11 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
             </div>
             <div className="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
               <Info className="w-3 h-3 text-slate-500 shrink-0" />
-              Rule of 300 (Income × 300)
+              Rule of 300: Income ({formatCurrency(monthlyIncome)}) × 300
             </div>
           </div>
 
-          {/* KPI 2: Emergency Fund */}
+          {/* Card 2: 6-Month Emergency Fund */}
           <div className={`p-5 rounded-xl border ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -221,15 +233,15 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
             </div>
             <div className="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
               <Info className="w-3 h-3 text-slate-500 shrink-0" />
-              6 months of Needs ({formatCurrency(needsAmount)}/mo)
+              6 months of Needs ({formatCurrency(needsAmount)} × 6)
             </div>
           </div>
 
-          {/* KPI 3: Monthly Investment */}
+          {/* Card 3: Monthly Investment */}
           <div className={`p-5 rounded-xl border ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Monthly Investing ({activeInvestPct}%)
+                Monthly Investment ({activeInvestPct}%)
               </span>
               <div className="p-1.5 rounded bg-emerald-500/10 text-emerald-400">
                 <TrendingUp className="w-4 h-4" />
@@ -240,15 +252,15 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
             </div>
             <div className="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
               <Info className="w-3 h-3 text-slate-500 shrink-0" />
-              Compound growth allocation
+              20% of monthly income to Pag-IBIG MP2 / Stocks
             </div>
           </div>
 
-          {/* KPI 4: Freedom Timeline */}
+          {/* Card 4: FIRE Timeframe */}
           <div className={`p-5 rounded-xl border ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Years to FIRE
+                Horizon to FIRE
               </span>
               <div className="p-1.5 rounded bg-indigo-500/10 text-indigo-400">
                 <Calendar className="w-4 h-4" />
@@ -259,24 +271,24 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
             </div>
             <div className="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
               <Info className="w-3 h-3 text-slate-500 shrink-0" />
-              Assumes {annualReturnRate}% annual return
+              Target Age: {targetAge} (at {effectiveReturnRate}% net ROI)
             </div>
           </div>
 
         </div>
 
-        {/* Dashboard Grid */}
+        {/* Form and Chart Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
-          {/* Left Column: Financial Inputs & Parameters (5 Cols) */}
+          {/* Left Column: Form Controls (5 Cols) */}
           <div className="lg:col-span-5 space-y-6">
             
-            {/* Income Input Panel */}
+            {/* Income Panel */}
             <div className={`p-6 rounded-xl border ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
               <div className="flex items-center justify-between mb-4">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                   <Wallet className="w-4 h-4 text-emerald-400" />
-                  Monthly Net Income
+                  Monthly Income
                 </label>
                 <div className="flex items-center bg-slate-950 rounded-md p-0.5 border border-slate-800 text-[11px]">
                   <button
@@ -294,7 +306,7 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
                 </div>
               </div>
 
-              {/* Number Input Field */}
+              {/* Income Field */}
               <div className="relative mb-5">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-500">
                   {currencySymbol}
@@ -314,7 +326,7 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
                 />
               </div>
 
-              {/* Income Slider */}
+              {/* Slider */}
               <div className="space-y-1.5 mb-6">
                 <div className="flex justify-between text-[11px] text-slate-500">
                   <span>{currencySymbol}10,000</span>
@@ -332,17 +344,17 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
                 />
               </div>
 
-              {/* Preset Buttons */}
+              {/* Presets */}
               <div>
                 <span className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                  Income Tiers
+                  Philippine Salary Benchmarks
                 </span>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {INCOME_PRESETS.map((preset) => (
                     <button
                       key={preset.value}
                       onClick={() => setMonthlyIncome(preset.value)}
-                      className={`px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-all border ${
+                      className={`px-3 py-2 rounded-lg text-xs text-left transition-all border ${
                         monthlyIncome === preset.value
                           ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400 font-semibold'
                           : isDark
@@ -350,20 +362,20 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
                           : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
                       }`}
                     >
-                      <div className="text-[10px] text-slate-400">{preset.label}</div>
-                      <div className="font-bold text-slate-200">{currencySymbol}{(preset.value / 1000).toFixed(1)}k</div>
+                      <div className="font-bold text-slate-200">{currencySymbol}{(preset.value).toLocaleString()}</div>
+                      <div className="text-[10px] text-slate-400 truncate">{preset.label}</div>
                     </button>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* Custom Ratio Adjuster */}
+            {/* Custom Ratios */}
             <div className={`p-6 rounded-xl border ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
               <div className="flex items-center justify-between mb-4">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                   <Sliders className="w-4 h-4 text-indigo-400" />
-                  Budget Allocation Ratio
+                  Budget Allocation Strategy
                 </label>
                 <button
                   onClick={() => {
@@ -380,14 +392,14 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
                       : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'
                   }`}
                 >
-                  {customMode ? 'Custom' : 'Standard 50/30/20'}
+                  {customMode ? 'Custom Mode' : 'Standard 50/30/20'}
                 </button>
               </div>
 
               {!customMode ? (
                 <div className="text-xs text-slate-400 leading-relaxed bg-slate-950/60 p-3 rounded-lg border border-slate-800">
-                  <span className="font-semibold text-slate-200 block mb-0.5">50/20/30 Framework:</span>
-                  Allocates <strong>50%</strong> to Needs (essential living), <strong>30%</strong> to Wants (lifestyle), and <strong>20%</strong> to Wealth Building / FIRE.
+                  <span className="font-semibold text-slate-200 block mb-0.5">50/20/30 Model Rules:</span>
+                  <strong>50% Needs</strong> ({formatCurrency(needsAmount)}) • <strong>30% Wants</strong> ({formatCurrency(wantsAmount)}) • <strong>20% Investing</strong> ({formatCurrency(investAmount)})
                 </div>
               ) : (
                 <div className="space-y-4 pt-1">
@@ -439,23 +451,23 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
               )}
             </div>
 
-            {/* FIRE Simulation Parameters */}
+            {/* Growth Assumptions */}
             <div className={`p-6 rounded-xl border ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
               <span className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
-                Growth Parameters
+                Realistic Growth Benchmarks
               </span>
 
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-400">Current Portfolio / Savings:</span>
+                    <span className="text-slate-400">Current Savings / Nest Egg:</span>
                     <span className="font-semibold text-slate-200">{formatCurrency(currentSavings)}</span>
                   </div>
                   <input
                     type="range"
                     min="0"
-                    max="1000000"
-                    step="10000"
+                    max="500000"
+                    step="5000"
                     value={currentSavings}
                     onChange={(e) => setCurrentSavings(Number(e.target.value))}
                     className="w-full h-1.5 bg-slate-800 rounded appearance-none accent-emerald-500"
@@ -464,25 +476,45 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
 
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-400">Assumed Annual ROI:</span>
+                    <span className="text-slate-400">Expected Annual ROI:</span>
                     <span className="font-semibold text-emerald-400">{annualReturnRate}% p.a.</span>
                   </div>
                   <input
                     type="range"
                     min="4"
-                    max="14"
+                    max="12"
                     step="0.5"
                     value={annualReturnRate}
                     onChange={(e) => setAnnualReturnRate(Number(e.target.value))}
                     className="w-full h-1.5 bg-slate-800 rounded appearance-none accent-emerald-500"
                   />
+                  <div className="flex justify-between text-[10px] text-slate-500 mt-1">
+                    <span>Conservative (5%)</span>
+                    <span>Pag-IBIG MP2 (7%)</span>
+                    <span>S&P 500 (10%)</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
+                  <label className="text-xs text-slate-300 flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={adjustForInflation}
+                      onChange={(e) => setAdjustForInflation(e.target.checked)}
+                      className="rounded accent-emerald-500"
+                    />
+                    Adjust for Inflation ({inflationRate}% p.a.)
+                  </label>
+                  <span className="text-xs font-semibold text-slate-400">
+                    Net ROI: {effectiveReturnRate}%
+                  </span>
                 </div>
               </div>
             </div>
 
           </div>
 
-          {/* Right Column: Detailed Views & Charts (7 Cols) */}
+          {/* Right Column: Visual Breakdown & Projection (7 Cols) */}
           <div className="lg:col-span-7 space-y-6">
 
             {/* Navigation Tabs */}
@@ -496,7 +528,7 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
                 }`}
               >
                 <PieIcon className="w-4 h-4" />
-                Monthly Distribution
+                Monthly Breakdown
               </button>
 
               <button
@@ -523,7 +555,7 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
                       Cash Flow Allocation
                     </span>
                     <span className="text-xs font-semibold text-slate-300">
-                      Total: {formatCurrency(monthlyIncome)}/mo
+                      Monthly Total: {formatCurrency(monthlyIncome)}
                     </span>
                   </div>
 
@@ -532,23 +564,20 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
                     <div
                       style={{ width: `${activeNeedsPct}%` }}
                       className="bg-blue-500 transition-all duration-300 relative flex items-center justify-center text-[10px] font-bold text-white"
-                      title={`Needs: ${formatCurrency(needsAmount)}`}
                     >
-                      {activeNeedsPct >= 15 && `${activeNeedsPct}%`}
+                      {activeNeedsPct >= 15 && `50% Needs`}
                     </div>
                     <div
                       style={{ width: `${activeWantsPct}%` }}
                       className="bg-amber-500 transition-all duration-300 relative flex items-center justify-center text-[10px] font-bold text-slate-950"
-                      title={`Wants: ${formatCurrency(wantsAmount)}`}
                     >
-                      {activeWantsPct >= 15 && `${activeWantsPct}%`}
+                      {activeWantsPct >= 15 && `30% Wants`}
                     </div>
                     <div
                       style={{ width: `${activeInvestPct}%` }}
                       className="bg-emerald-500 transition-all duration-300 relative flex items-center justify-center text-[10px] font-bold text-slate-950"
-                      title={`Investing: ${formatCurrency(investAmount)}`}
                     >
-                      {activeInvestPct >= 15 && `${activeInvestPct}%`}
+                      {activeInvestPct >= 15 && `20% Invest`}
                     </div>
                   </div>
 
@@ -560,8 +589,8 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
                       <div className="flex items-center gap-3">
                         <div className="w-3 h-3 rounded-full bg-blue-500" />
                         <div>
-                          <div className="text-xs font-semibold text-slate-200">Needs ({activeNeedsPct}%)</div>
-                          <div className="text-[11px] text-slate-400">Rent, groceries, utilities, health, transportation</div>
+                          <div className="text-xs font-semibold text-slate-200">Living Needs ({activeNeedsPct}%)</div>
+                          <div className="text-[11px] text-slate-400">Rent, groceries, utilities, health, transport</div>
                         </div>
                       </div>
                       <div className="text-sm font-bold text-slate-100">{formatCurrency(needsAmount)}<span className="text-xs text-slate-400 font-normal">/mo</span></div>
@@ -572,8 +601,8 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
                       <div className="flex items-center gap-3">
                         <div className="w-3 h-3 rounded-full bg-amber-500" />
                         <div>
-                          <div className="text-xs font-semibold text-slate-200">Wants ({activeWantsPct}%)</div>
-                          <div className="text-[11px] text-slate-400">Dining, entertainment, travel, subscriptions</div>
+                          <div className="text-xs font-semibold text-slate-200">Discretionary Wants ({activeWantsPct}%)</div>
+                          <div className="text-[11px] text-slate-400">Dining, entertainment, subscriptions, hobbies</div>
                         </div>
                       </div>
                       <div className="text-sm font-bold text-slate-100">{formatCurrency(wantsAmount)}<span className="text-xs text-slate-400 font-normal">/mo</span></div>
@@ -584,8 +613,8 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
                       <div className="flex items-center gap-3">
                         <div className="w-3 h-3 rounded-full bg-emerald-500" />
                         <div>
-                          <div className="text-xs font-semibold text-slate-200">Investing ({activeInvestPct}%)</div>
-                          <div className="text-[11px] text-slate-400">Pag-IBIG MP2, index funds, REITs, FIRE growth</div>
+                          <div className="text-xs font-semibold text-slate-200">Wealth Building ({activeInvestPct}%)</div>
+                          <div className="text-[11px] text-slate-400">Pag-IBIG MP2, S&P 500, REITs, emergency fund</div>
                         </div>
                       </div>
                       <div className="text-sm font-bold text-emerald-400">{formatCurrency(investAmount)}<span className="text-xs text-slate-400 font-normal">/mo</span></div>
@@ -594,7 +623,7 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
                   </div>
                 </div>
 
-                {/* Minimalist Recharts Donut */}
+                {/* Donut Chart & Target Breakdown */}
                 <div className={`p-6 rounded-xl border ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'} flex flex-col md:flex-row items-center gap-6`}>
                   <div className="w-full md:w-1/2 h-56 relative">
                     <ResponsiveContainer width="100%" height="100%">
@@ -630,16 +659,16 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
                     </div>
                   </div>
 
-                  <div className="w-full md:w-1/2 space-y-2">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
-                      Target Metrics
+                  <div className="w-full md:w-1/2 space-y-3">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                      Target Financial Benchmarks
                     </span>
                     <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800 text-xs">
-                      <div className="text-slate-400 mb-0.5">Rule of 300 Target:</div>
+                      <div className="text-slate-400 mb-0.5">FIRE Goal (Rule of 300):</div>
                       <div className="text-base font-bold text-slate-100">{formatCurrency(fireTargetGoal)}</div>
                     </div>
                     <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800 text-xs">
-                      <div className="text-slate-400 mb-0.5">Emergency Fund (6 Months):</div>
+                      <div className="text-slate-400 mb-0.5">6-Month Emergency Reserve:</div>
                       <div className="text-base font-bold text-slate-100">{formatCurrency(emergencyFund)}</div>
                     </div>
                   </div>
@@ -654,10 +683,10 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
                     <h3 className="text-sm font-bold text-slate-100">
-                      Portfolio Growth Trajectory
+                      Portfolio Accumulation Curve
                     </h3>
                     <p className="text-xs text-slate-400">
-                      Projected accumulation to reach {formatCurrency(fireTargetGoal)} at {annualReturnRate}% ROI.
+                      Accumulating {formatCurrency(fireTargetGoal)} with {formatCurrency(investAmount)}/mo at {effectiveReturnRate}% net ROI.
                     </p>
                   </div>
 
@@ -702,7 +731,7 @@ Estimated FIRE Horizon: ${yearsToFire} Years (${annualReturnRate}% ROI)`;
 
       </main>
 
-      {/* Clean Minimalist Footer */}
+      {/* Footer */}
       <footer className="border-t border-slate-800/60 mt-16 py-6 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div>50/20/30 FIRE & Budgeting Calculator</div>
