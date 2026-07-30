@@ -81,7 +81,6 @@ export default function App() {
   // Caltiger-style Wizard Modal State
   const [showWizardModal, setShowWizardModal] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
-  const [hasCalculated, setHasCalculated] = useState(true);
 
   // User Profile State
   const [userName, setUserName] = useState('Alex');
@@ -330,7 +329,7 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
       isDark ? 'bg-[#090d16] text-slate-100' : 'bg-slate-50 text-slate-900'
     }`}>
       
-      {/* CALTIGER-STYLE STICKY SAAS HEADER */}
+      {/* STICKY SAAS HEADER */}
       <header className={`border-b sticky top-0 z-40 backdrop-blur-xl ${
         isDark ? 'bg-[#090d16]/85 border-slate-800/80' : 'bg-white/85 border-slate-200'
       }`}>
@@ -344,7 +343,7 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
               <span className="font-black text-lg tracking-tight flex items-center gap-1.5">
                 HowToRetire<span className="text-emerald-400">.info</span>
                 <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                  AI FIRE Engine
+                  FIRE System
                 </span>
               </span>
             </div>
@@ -403,7 +402,7 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
         </div>
       </header>
 
-      {/* CALTIGER HERO BANNER */}
+      {/* HERO BANNER */}
       <section className="relative pt-12 pb-8 px-4 overflow-hidden border-b border-slate-800/80">
         
         {/* Glow Spheres Background */}
@@ -414,7 +413,7 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
           
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-extrabold tracking-wide uppercase shadow-lg shadow-emerald-500/10">
             <Sparkles className="w-3.5 h-3.5 fill-emerald-400" />
-            AI-Powered 50/20/30 FIRE & Budgeting System
+            Automated 50/20/30 FIRE & Budgeting System
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-100 max-w-4xl mx-auto leading-tight">
@@ -473,7 +472,7 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
       {/* MAIN BENTO GRID DASHBOARD */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
         
-        {/* CALTIGER BENTO HERO KPI CARDS */}
+        {/* BENTO HERO KPI CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
           
           <div className={`p-6 rounded-3xl border transition-all duration-300 hover:border-emerald-500/40 ${
@@ -1011,7 +1010,7 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
 
         </div>
 
-        {/* 🚀 RECOMMENDED NEXT STEPS (Caltiger SaaS Feature Block) */}
+        {/* 🚀 RECOMMENDED NEXT STEPS */}
         <section className={`p-8 rounded-3xl border ${
           isDark ? 'bg-gradient-to-br from-[#0f172a] to-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
         } space-y-6`}>
@@ -1025,7 +1024,6 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             
-            {/* MariBank Referral Card */}
             <a
               href="https://maribank.ph/c/earnfreemoney?referralCode=BM284604"
               target="_blank"
@@ -1053,7 +1051,6 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
               </div>
             </a>
 
-            {/* Pag-IBIG MP2 & S&P 500 Guide */}
             <a
               href="https://www.pagibigfund.gov.ph"
               target="_blank"
@@ -1118,7 +1115,7 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
 
       </main>
 
-      {/* CALTIGER-STYLE ONBOARDING WIZARD MODAL */}
+      {/* WIZARD MODAL */}
       {showWizardModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
           <div className={`relative w-full max-w-xl p-8 rounded-3xl border shadow-2xl space-y-6 ${
@@ -1358,7 +1355,6 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
                   Open & Save Official PDF Document
                 </button>
 
-                {/* Caltiger Next Steps inside Modal */}
                 <div className="pt-4 border-t border-slate-800 text-left space-y-3">
                   <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 block flex items-center gap-1.5">
                     <Rocket className="w-3.5 h-3.5 text-emerald-400" />
