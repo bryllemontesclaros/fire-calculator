@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bryllemontesclaros.github.io/fire-calculator/sitemap.xml
