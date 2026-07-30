@@ -23,7 +23,8 @@ import {
   Sparkles,
   ArrowRight,
   CheckCircle2,
-  Lock
+  Lock,
+  Printer
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -144,72 +145,199 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Lead Gen Email Submission Handler
   const handleLeadSubmit = (e) => {
     e.preventDefault();
     if (!emailInput || !emailInput.includes('@')) return;
 
     setIsSubmitting(true);
-    
-    // Simulate API request to email marketing provider (Substack, Beehiiv, ConvertKit, or Mailchimp)
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSubmitted(true);
-    }, 1000);
+    }, 800);
   };
 
-  // Download Generated PDF / Text Report
-  const handleDownloadReport = () => {
-    const reportText = `================================================
-50/20/30 FIRE FINANCIAL STRATEGY & ACTION REPORT
-================================================
-Prepared for: ${nameInput || 'Valued Investor'}
-Generated Date: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+  // Generate Executive Formatted Printable PDF Document Window
+  const handlePrintPDF = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
 
-1. CASH FLOW SUMMARY
-------------------------------------------------
-Monthly Net Income: ${formatCurrency(monthlyIncome)}
-Annual Net Take-Home: ${formatCurrency(annualIncome)}
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FIRE Strategy Report - ${nameInput || 'Investor'}</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #0f172a;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-b: 2px solid #10b981;
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: #64748b;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+    .kpi-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-top: 4px;
+    }
+    .kpi-value-green {
+      color: #059669;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    .table th, .table td {
+      border: 1px solid #e2e8f0;
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 12px;
+    }
+    .table th {
+      background: #f1f5f9;
+      font-weight: 700;
+    }
+    .footer {
+      margin-top: 40px;
+      padding-top: 16px;
+      border-t: 1px solid #e2e8f0;
+      font-size: 11px;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+    }
+    @media print {
+      body { padding: 20px; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="title">FIRE Financial Strategy Report</div>
+      <div class="subtitle">50/20/30 Financial Independence Roadmap</div>
+    </div>
+    <div style="text-align: right;">
+      <div style="font-size: 12px; font-weight: 700;">${nameInput || 'Valued Client'}</div>
+      <div style="font-size: 11px; color: #64748b;">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+    </div>
+  </div>
 
-ALLOCATION BREAKDOWN (50/20/30 RULE):
-• Living Needs (${activeNeedsPct}%): ${formatCurrency(needsAmount)}/month
-  (Rent, Groceries, Utilities, Health, Transportation)
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">FIRE Target Goal (Rule of 300)</div>
+      <div class="kpi-value kpi-value-green">${formatCurrency(fireTargetGoal)}</div>
+      <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Portfolio required for early retirement</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">6-Month Emergency Reserve</div>
+      <div class="kpi-value">${formatCurrency(emergencyFund)}</div>
+      <div style="font-size: 11px; color: #64748b; margin-top: 4px;">6 months of essential living needs</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Monthly Investment Engine (20%)</div>
+      <div class="kpi-value kpi-value-green">${formatCurrency(investAmount)}/mo</div>
+      <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Wealth building allocation</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Estimated FIRE Horizon</div>
+      <div class="kpi-value">${yearsToFire} Years</div>
+      <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Target Age: ${targetAge} (${effectiveReturnRate}% net ROI)</div>
+    </div>
+  </div>
 
-• Discretionary Wants (${activeWantsPct}%): ${formatCurrency(wantsAmount)}/month
-  (Dining Out, Entertainment, Subscriptions, Hobbies)
+  <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Monthly Cash Flow Allocation</h3>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Percentage</th>
+        <th>Monthly Amount</th>
+        <th>Annual Equivalent</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Living Needs</strong> (Rent, Groceries, Utilities)</td>
+        <td>${activeNeedsPct}%</td>
+        <td>${formatCurrency(needsAmount)}</td>
+        <td>${formatCurrency(needsAmount * 12)}</td>
+      </tr>
+      <tr>
+        <td><strong>Discretionary Wants</strong> (Dining, Lifestyle)</td>
+        <td>${activeWantsPct}%</td>
+        <td>${formatCurrency(wantsAmount)}</td>
+        <td>${formatCurrency(wantsAmount * 12)}</td>
+      </tr>
+      <tr>
+        <td><strong>Wealth Building</strong> (Pag-IBIG MP2, Index Funds)</td>
+        <td>${activeInvestPct}%</td>
+        <td>${formatCurrency(investAmount)}</td>
+        <td>${formatCurrency(investAmount * 12)}</td>
+      </tr>
+      <tr style="font-weight: 700; background: #f8fafc;">
+        <td>Total Net Income</td>
+        <td>100%</td>
+        <td>${formatCurrency(monthlyIncome)}</td>
+        <td>${formatCurrency(annualIncome)}</td>
+      </tr>
+    </tbody>
+  </table>
 
-• Wealth Building / FIRE (${activeInvestPct}%): ${formatCurrency(investAmount)}/month
-  (Pag-IBIG MP2, S&P 500 Index Funds, REITs, Savings)
+  <div class="footer">
+    <div>Generated by 50/20/30 FIRE & Budgeting Calculator</div>
+    <div>Page 1 of 1</div>
+  </div>
 
-2. CORE FINANCIAL MILESTONES
-------------------------------------------------
-🛡️ 6-Month Emergency Reserve: ${formatCurrency(emergencyFund)}
-🎯 FIRE Freedom Target (Rule of 300): ${formatCurrency(fireTargetGoal)}
+  <script>
+    window.onload = function() {
+      window.print();
+    }
+  </script>
+</body>
+</html>
+    `;
 
-3. FIRE RETIREMENT TIMELINE
-------------------------------------------------
-• Current Portfolio / Savings: ${formatCurrency(currentSavings)}
-• Monthly Investment Engine: ${formatCurrency(investAmount)}/month
-• Net ROI (After Inflation): ${effectiveReturnRate}% p.a.
-• Estimated Years to FIRE: ${yearsToFire} Years
-• Projected Retirement Age: Age ${targetAge}
-
-================================================
-RECOMMENDED ACTION STEPS & RESOURCES:
-• High-Yield Savings (Emergency Reserve 4%-6% p.a.): SeaBank, Maya Bank, GoTyme
-• Wealth Building Engine: Pag-IBIG MP2, GoTrade (S&P 500), COL Financial
-• Track Your Monthly Budget: Get the 50/20/30 Notion Budgeting Template
-================================================`;
-
-    const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `FIRE_Strategy_Report_${monthlyIncome}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
   };
 
   const pieData = [
@@ -240,7 +368,6 @@ RECOMMENDED ACTION STEPS & RESOURCES:
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Primary Action Lead Magnet Button */}
             <button
               onClick={() => {
                 setIsSubmitted(false);
@@ -248,8 +375,8 @@ RECOMMENDED ACTION STEPS & RESOURCES:
               }}
               className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all shadow-md shadow-emerald-500/20 flex items-center gap-1.5"
             >
-              <Mail className="w-3.5 h-3.5" />
-              Get PDF Report
+              <Printer className="w-3.5 h-3.5" />
+              Download PDF Report
             </button>
 
             <button
@@ -288,7 +415,7 @@ RECOMMENDED ACTION STEPS & RESOURCES:
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>
-              Want your personalized <strong>{formatCurrency(fireTargetGoal)} FIRE Roadmap</strong> delivered to your inbox as a printable PDF report?
+              Want your personalized <strong>{formatCurrency(fireTargetGoal)} FIRE Roadmap</strong> as a printable PDF report?
             </span>
           </div>
           <button
@@ -298,7 +425,7 @@ RECOMMENDED ACTION STEPS & RESOURCES:
             }}
             className="text-emerald-400 font-bold hover:underline flex items-center gap-1 shrink-0"
           >
-            Download Free Report <ArrowRight className="w-3 h-3" />
+            Download Official PDF <ArrowRight className="w-3 h-3" />
           </button>
         </div>
       </div>
@@ -850,7 +977,6 @@ RECOMMENDED ACTION STEPS & RESOURCES:
             isDark ? 'bg-slate-900 border-slate-700 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
           }`}>
             
-            {/* Close Button */}
             <button
               onClick={() => setIsModalOpen(false)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all"
@@ -862,14 +988,14 @@ RECOMMENDED ACTION STEPS & RESOURCES:
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
-                    <Flame className="w-5 h-5" />
+                    <Printer className="w-5 h-5" />
                   </div>
                   <div>
                     <h3 className="text-base font-bold">
-                      Get Your Customized FIRE Strategy Report
+                      Get Your Official FIRE PDF Strategy
                     </h3>
                     <p className="text-xs text-slate-400">
-                      Printable PDF Roadmap for {formatCurrency(monthlyIncome)} monthly cash flow
+                      Formatted 1-Page PDF Document for {formatCurrency(monthlyIncome)} monthly cash flow
                     </p>
                   </div>
                 </div>
@@ -877,13 +1003,13 @@ RECOMMENDED ACTION STEPS & RESOURCES:
                 <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2 text-xs">
                   <div className="font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    What’s included in your personal report:
+                    What’s included in your official PDF:
                   </div>
                   <ul className="space-y-1.5 text-slate-400 pl-5 list-disc">
-                    <li>Customized 50/20/30 Cash Flow Allocation ({formatCurrency(needsAmount)} Needs, {formatCurrency(wantsAmount)} Wants, {formatCurrency(investAmount)} Investing)</li>
-                    <li>Year-by-year FIRE Net Worth accumulation curve to reach <strong>{formatCurrency(fireTargetGoal)}</strong></li>
+                    <li>Formatted 50/20/30 Cash Flow Allocation ({formatCurrency(needsAmount)} Needs, {formatCurrency(wantsAmount)} Wants, {formatCurrency(investAmount)} Investing)</li>
+                    <li>Official FIRE Net Worth accumulation target (<strong>{formatCurrency(fireTargetGoal)}</strong>)</li>
                     <li>6-Month Emergency Reserve Target ({formatCurrency(emergencyFund)})</li>
-                    <li>Pag-IBIG MP2 & Global Index Fund starter allocation checklist</li>
+                    <li>Pag-IBIG MP2 & S&P 500 starter allocation roadmap</li>
                   </ul>
                 </div>
 
@@ -921,11 +1047,11 @@ RECOMMENDED ACTION STEPS & RESOURCES:
                     className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? (
-                      <span>Preparing Your Report...</span>
+                      <span>Preparing Official PDF...</span>
                     ) : (
                       <>
-                        <Download className="w-4 h-4" />
-                        Send Me My Customized FIRE PDF Strategy
+                        <Printer className="w-4 h-4" />
+                        Generate Official FIRE PDF Document
                       </>
                     )}
                   </button>
@@ -937,36 +1063,35 @@ RECOMMENDED ACTION STEPS & RESOURCES:
                 </p>
               </div>
             ) : (
-              /* SUCCESS VIEW WITH INSTANT DOWNLOAD & MONETIZATION LINKS */
+              /* SUCCESS VIEW WITH INSTANT PDF PRINT / DOWNLOAD & MONETIZATION LINKS */
               <div className="space-y-5 text-center py-2">
                 <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/30">
                   <Check className="w-6 h-6" />
                 </div>
 
                 <div>
-                  <h3 className="text-base font-bold text-slate-100">Your FIRE Strategy is Ready!</h3>
+                  <h3 className="text-base font-bold text-slate-100">Your Official PDF Report is Ready!</h3>
                   <p className="text-xs text-slate-400 mt-1">
-                    We've sent a copy to <strong>{emailInput}</strong>. You can also download your report instantly below.
+                    Click below to open your executive 1-page PDF document and save/print it instantly.
                   </p>
                 </div>
 
                 <button
-                  onClick={handleDownloadReport}
+                  onClick={handlePrintPDF}
                   className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
                 >
-                  <Download className="w-4 h-4" />
-                  Download FIRE Report (.TXT / Printable PDF)
+                  <Printer className="w-4 h-4" />
+                  Open & Save Official PDF Document
                 </button>
 
                 {/* MONETIZATION & AFFILIATE RECOMMENDATION CARDS */}
                 <div className="pt-4 border-t border-slate-800 text-left space-y-3">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-                    🚀 Next Steps for Your {formatCurrency(monthlyIncome)} Plan
+                    🚀 Recommended Next Steps
                   </span>
 
                   <div className="grid grid-cols-1 gap-2 text-xs">
                     
-                    {/* Affiliate Card 1: High Yield Emergency Reserve */}
                     <a
                       href="https://www.seabank.com.ph"
                       target="_blank"
@@ -978,11 +1103,10 @@ RECOMMENDED ACTION STEPS & RESOURCES:
                           High-Yield Emergency Reserve (4.5% p.a.)
                           <ExternalLink className="w-3 h-3 text-slate-500" />
                         </div>
-                        <div className="text-[11px] text-slate-400">Park your {formatCurrency(emergencyFund)} safety net in SeaBank or Maya</div>
+                        <div className="text-[11px] text-slate-400">Park your {formatCurrency(emergencyFund)} safety net in SeaBank / Maya</div>
                       </div>
                     </a>
 
-                    {/* Affiliate Card 2: Investment Engine */}
                     <a
                       href="https://www.pagibigfund.gov.ph"
                       target="_blank"
