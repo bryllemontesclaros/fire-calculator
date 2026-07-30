@@ -32,7 +32,7 @@ import {
   X,
   Star,
   ArrowLeft,
-  BookOpen
+  Download
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -77,10 +77,10 @@ const FAQS = [
 export default function App() {
   const [isDark, setIsDark] = useState(true);
 
-  // Multi-page Navigation State: 'landing' (Home / Hero Page) vs 'calculator' (Interactive Calculator Dashboard)
+  // Multi-page Navigation State
   const [currentPage, setCurrentPage] = useState('landing');
 
-  // Caltiger-style Onboarding Wizard Modal State
+  // Quick Setup Wizard Modal State
   const [showWizardModal, setShowWizardModal] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
 
@@ -104,12 +104,6 @@ export default function App() {
   const [inflationRate, setInflationRate] = useState(3.0);
   const [adjustForInflation, setAdjustForInflation] = useState(true);
 
-  // Lead & PDF Modal State
-  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
-  const [emailInput, setEmailInput] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
   // Legal Modal State
   const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
   const [legalTab, setLegalTab] = useState('disclaimer');
@@ -119,7 +113,7 @@ export default function App() {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState('breakdown');
 
-  // Safe Numerical Fallbacks (Strict, zero-BS validation)
+  // Safe Numerical Fallbacks
   const safeIncome = Math.max(1000, Number(monthlyIncome) || 25000);
   const safeSavings = Math.max(0, Number(currentSavings) || 0);
   const safeAge = Math.max(18, Number(currentAge) || 25);
@@ -191,17 +185,7 @@ Monthly Take-Home: ${formatCurrency(safeIncome)} (Annual: ${formatCurrency(annua
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleLeadSubmit = (e) => {
-    e.preventDefault();
-    if (!emailInput || !emailInput.includes('@')) return;
-
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 800);
-  };
-
+  // Instant 1-Click PDF Generator
   const handlePrintPDF = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -348,7 +332,7 @@ Monthly Take-Home: ${formatCurrency(safeIncome)} (Annual: ${formatCurrency(annua
               </div>
             </button>
 
-            {/* View Switcher Buttons */}
+            {/* View Switcher Tabs */}
             <nav className="hidden md:flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-xs font-bold">
               <button
                 onClick={() => setCurrentPage('landing')}
@@ -370,35 +354,14 @@ Monthly Take-Home: ${formatCurrency(safeIncome)} (Annual: ${formatCurrency(annua
           </div>
 
           <div className="flex items-center gap-3">
-            {currentPage === 'calculator' && (
-              <button
-                onClick={() => {
-                  setOnboardingStep(1);
-                  setShowWizardModal(true);
-                }}
-                className="px-3.5 py-1.5 rounded-2xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 flex items-center gap-1.5 transition-all"
-              >
-                <RotateCcw className="w-3.5 h-3.5 text-emerald-400" />
-                Quick Setup
-              </button>
-            )}
-
+            {/* INSTANT DIRECT PDF DOWNLOAD BUTTON */}
             <button
-              onClick={() => {
-                if (currentPage === 'landing') {
-                  setCurrentPage('calculator');
-                } else {
-                  setIsSubmitted(false);
-                  setIsPdfModalOpen(true);
-                }
-              }}
-              className="px-4 py-2 rounded-2xl text-xs font-extrabold bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 transition-all shadow-md shadow-emerald-500/20 flex items-center gap-1.5"
+              onClick={handlePrintPDF}
+              className="px-4 py-2 rounded-2xl text-xs font-extrabold bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 transition-all shadow-md shadow-emerald-500/20 flex items-center gap-1.5 active:scale-95"
+              title="Download & Print 1-Page PDF Strategy Document"
             >
-              {currentPage === 'landing' ? (
-                <>Open Calculator →</>
-              ) : (
-                <><Printer className="w-3.5 h-3.5" /> Download PDF</>
-              )}
+              <Download className="w-3.5 h-3.5" />
+              Download PDF Report
             </button>
 
             <button
@@ -452,14 +415,11 @@ Monthly Take-Home: ${formatCurrency(safeIncome)} (Annual: ${formatCurrency(annua
                 </button>
 
                 <button
-                  onClick={() => {
-                    setOnboardingStep(1);
-                    setShowWizardModal(true);
-                  }}
+                  onClick={handlePrintPDF}
                   className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-extrabold text-xs transition-all flex items-center justify-center gap-2"
                 >
-                  <Zap className="w-4 h-4 text-emerald-400" />
-                  Take 30-Second Quick Setup
+                  <Download className="w-4 h-4 text-emerald-400" />
+                  Instant Download PDF Report
                 </button>
               </div>
 
@@ -1351,152 +1311,6 @@ Monthly Take-Home: ${formatCurrency(safeIncome)} (Annual: ${formatCurrency(annua
                     Open Calculator Dashboard 🚀
                   </button>
                 </div>
-              </div>
-            )}
-
-          </div>
-        </div>
-      )}
-
-      {/* LEAD GENERATION & PDF REPORT MODAL */}
-      {isPdfModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-          <div className={`relative w-full max-w-lg p-7 rounded-3xl border shadow-2xl transition-all ${
-            isDark ? 'bg-[#0f172a] border-slate-700 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
-          }`}>
-            
-            <button
-              onClick={() => setIsPdfModalOpen(false)}
-              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {!isSubmitted ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400">
-                    <Printer className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold">
-                      Get Your Official FIRE PDF Strategy
-                    </h3>
-                    <p className="text-xs text-slate-400">
-                      Formatted 1-Page PDF Document for {formatCurrency(safeIncome)} monthly cash flow
-                    </p>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2 text-xs">
-                  <div className="font-bold text-slate-300 mb-1 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    What’s included in your official PDF:
-                  </div>
-                  <ul className="space-y-1.5 text-slate-400 pl-5 list-disc">
-                    <li>Formatted 50/20/30 Cash Flow Allocation ({formatCurrency(needsAmount)} Needs, {formatCurrency(wantsAmount)} Wants, {formatCurrency(investAmount)} Investing)</li>
-                    <li>Official FIRE Net Worth accumulation target (<strong>{formatCurrency(fireTargetGoal)}</strong>)</li>
-                    <li>6-Month Emergency Reserve Target ({formatCurrency(emergencyFund)})</li>
-                    <li>Pag-IBIG MP2 & S&P 500 starter allocation roadmap</li>
-                  </ul>
-                </div>
-
-                <form onSubmit={handleLeadSubmit} className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 mb-1">Email Address <span className="text-emerald-400">*</span></label>
-                    <input
-                      type="email"
-                      required
-                      value={emailInput}
-                      onChange={(e) => setEmailInput(e.target.value)}
-                      placeholder="alex@example.com"
-                      className={`w-full px-4 py-3.5 text-xs rounded-2xl border outline-none ${
-                        isDark ? 'bg-slate-950 border-slate-700 text-slate-100 focus:border-emerald-500' : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
-                      }`}
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
-                  >
-                    {isSubmitting ? (
-                      <span>Preparing Official PDF...</span>
-                    ) : (
-                      <>
-                        <Printer className="w-4 h-4" />
-                        Generate Official FIRE PDF Document
-                      </>
-                    )}
-                  </button>
-                </form>
-
-                <p className="text-[10px] text-slate-500 text-center flex items-center justify-center gap-1">
-                  <Lock className="w-3 h-3 text-slate-500" />
-                  We respect your privacy. Zero spam. Unsubscribe anytime.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-5 text-center py-2">
-                <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/30">
-                  <Check className="w-6 h-6" />
-                </div>
-
-                <div>
-                  <h3 className="text-base font-bold text-slate-100">Your Official PDF Report is Ready!</h3>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Click below to open your executive 1-page PDF document and save/print it instantly.
-                  </p>
-                </div>
-
-                <button
-                  onClick={handlePrintPDF}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
-                >
-                  <Printer className="w-4 h-4" />
-                  Open & Save Official PDF Document
-                </button>
-
-                <div className="pt-4 border-t border-slate-800 text-left space-y-3">
-                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 block flex items-center gap-1.5">
-                    <Rocket className="w-3.5 h-3.5 text-emerald-400" />
-                    🚀 RECOMMENDED NEXT STEPS
-                  </span>
-
-                  <div className="grid grid-cols-1 gap-2 text-xs">
-                    <a
-                      href="https://maribank.ph/c/earnfreemoney?referralCode=BM284604"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-3.5 rounded-2xl bg-slate-950 border border-emerald-500/40 hover:border-emerald-400 transition-all flex items-center justify-between group"
-                    >
-                      <div>
-                        <div className="font-bold text-emerald-400 group-hover:text-emerald-300 transition-colors flex items-center gap-1.5">
-                          MariBank (High-Yield 4.5% p.a. Savings)
-                          <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
-                        </div>
-                        <div className="text-[11px] text-slate-400">Park your {formatCurrency(emergencyFund)} safety net (Code: BM284604)</div>
-                      </div>
-                    </a>
-
-                    <a
-                      href="https://www.pagibigfund.gov.ph"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500/50 transition-all flex items-center justify-between group"
-                    >
-                      <div>
-                        <div className="font-bold text-slate-200 group-hover:text-emerald-400 transition-colors flex items-center gap-1.5">
-                          Pag-IBIG MP2 & S&P 500 Starter Guide
-                          <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
-                        </div>
-                        <div className="text-[11px] text-slate-400">Automate your {formatCurrency(investAmount)}/mo wealth building</div>
-                      </div>
-                    </a>
-                  </div>
-                </div>
-
               </div>
             )}
 
