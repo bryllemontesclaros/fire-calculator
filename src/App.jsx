@@ -14,7 +14,8 @@ import {
   Moon,
   Info,
   Wallet,
-  Calendar
+  Calendar,
+  Briefcase
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -29,62 +30,57 @@ import {
   CartesianGrid
 } from 'recharts';
 
-const INCOME_PRESETS = [
-  { label: 'Entry Level', value: 22500, note: 'Fresh Grad / BPO Start' },
-  { label: 'Mid Professional', value: 45000, note: '3-5 Yrs Experience' },
-  { label: 'Senior Specialist', value: 85000, note: '5-8 Yrs Experience' },
-  { label: 'Manager / Lead', value: 140000, note: 'Department Lead' },
-  { label: 'Executive / Tech', value: 250000, note: 'Senior Tech / Exec' },
+// Accurate Philippine Career Salary Tiers (Monthly Net Take-Home)
+const SALARY_BENCHMARKS = [
+  { label: 'Junior / Entry', value: 25000, annual: 300000, desc: 'Fresh Grad / BPO Associate (₱25k/mo)' },
+  { label: 'Mid-Level Pro', value: 45000, annual: 540000, desc: '3–5 Yrs Exp / Senior Specialist (₱45k/mo)' },
+  { label: 'Senior Lead', value: 85000, annual: 1020000, desc: '5–8 Yrs Exp / Team Lead (₱85k/mo)' },
+  { label: 'Managerial', value: 140000, annual: 1680000, desc: 'Department Manager / Specialist (₱140k/mo)' },
+  { label: 'Director / Executive', value: 250000, annual: 3000000, desc: 'Director / Offshore Tech / VP (₱250k/mo)' },
 ];
 
 export default function App() {
-  // Theme state
   const [isDark, setIsDark] = useState(true);
 
-  // Inputs - Accurate baseline defaults
-  const [monthlyIncome, setMonthlyIncome] = useState(22500); // ₱22,500 baseline
+  // Inputs
+  const [monthlyIncome, setMonthlyIncome] = useState(25000); // Standard baseline ₱25,000
   const [currencySymbol, setCurrencySymbol] = useState('₱');
   
-  // Allocation Ratios (Standard 50 / 30 / 20)
+  // Ratios
   const [customMode, setCustomMode] = useState(false);
   const [needsPct, setNeedsPct] = useState(50);
   const [wantsPct, setWantsPct] = useState(30);
   const [investPct, setInvestPct] = useState(20);
 
-  // Simulation inputs with accurate real-world defaults
-  const [currentSavings, setCurrentSavings] = useState(20000); // Realistic starter savings
-  const [annualReturnRate, setAnnualReturnRate] = useState(7.0); // Realistic 7.0% p.a. (Pag-IBIG MP2 / S&P 500 average)
-  const [inflationRate, setInflationRate] = useState(3.0); // 3% average PH inflation
+  // Growth assumptions
+  const [currentSavings, setCurrentSavings] = useState(25000);
+  const [annualReturnRate, setAnnualReturnRate] = useState(7.0);
+  const [inflationRate, setInflationRate] = useState(3.0);
   const [adjustForInflation, setAdjustForInflation] = useState(true);
   const [currentAge, setCurrentAge] = useState(25);
 
-  // UI state
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState('breakdown'); // 'breakdown' | 'fire'
+  const [activeTab, setActiveTab] = useState('breakdown');
 
-  // Active ratios
   const activeNeedsPct = customMode ? needsPct : 50;
   const activeWantsPct = customMode ? wantsPct : 30;
   const activeInvestPct = customMode ? investPct : 20;
 
-  // Exact Core Calculations
   const needsAmount = useMemo(() => monthlyIncome * (activeNeedsPct / 100), [monthlyIncome, activeNeedsPct]);
   const wantsAmount = useMemo(() => monthlyIncome * (activeWantsPct / 100), [monthlyIncome, activeWantsPct]);
   const investAmount = useMemo(() => monthlyIncome * (activeInvestPct / 100), [monthlyIncome, activeInvestPct]);
   
-  // Core Requested Metrics:
-  // 1. FIRE Target Goal: Monthly Income * 300 (Rule of 300 = 25 yrs of income / 4% SWR)
+  // FIRE Target: Monthly Income * 300
   const fireTargetGoal = useMemo(() => monthlyIncome * 300, [monthlyIncome]);
+  const annualIncome = useMemo(() => monthlyIncome * 12, [monthlyIncome]);
 
-  // 2. Emergency Fund (6 Months of Needs): (Monthly Income * 0.50) * 6
+  // Emergency Fund (6 Months of Needs): (Monthly Income * 0.50) * 6
   const emergencyFund = useMemo(() => (monthlyIncome * (activeNeedsPct / 100)) * 6, [monthlyIncome, activeNeedsPct]);
 
-  // Effective real rate of return (Nominal ROI minus Inflation if toggled)
   const effectiveReturnRate = useMemo(() => {
     return adjustForInflation ? Math.max(0.5, annualReturnRate - inflationRate) : annualReturnRate;
   }, [annualReturnRate, inflationRate, adjustForInflation]);
 
-  // Projection timeline calculation
   const projectionData = useMemo(() => {
     const data = [];
     const monthlyReturnRate = effectiveReturnRate / 100 / 12;
@@ -106,7 +102,6 @@ export default function App() {
     return data;
   }, [investAmount, currentSavings, effectiveReturnRate, currentAge]);
 
-  // Exact Years to reach FIRE
   const yearsToFire = useMemo(() => {
     const match = projectionData.find((d) => d.portfolio >= fireTargetGoal);
     return match ? match.year : '> 45';
@@ -119,16 +114,16 @@ export default function App() {
   const formatCurrency = (val) => `${currencySymbol}${Math.round(val).toLocaleString('en-US')}`;
 
   const handleCopySummary = () => {
-    const text = `FIRE & Budgeting Plan (50/20/30 Rule)
+    const text = `FIRE & Budgeting Financial Strategy
 ----------------------------------
-Monthly Net Income: ${formatCurrency(monthlyIncome)}
-- 50% Needs (Living): ${formatCurrency(needsAmount)}/mo
-- 30% Wants (Discretionary): ${formatCurrency(wantsAmount)}/mo
-- 20% Investing (FIRE): ${formatCurrency(investAmount)}/mo
+Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annualIncome)})
+- 50% Living Needs: ${formatCurrency(needsAmount)}/mo
+- 30% Discretionary Wants: ${formatCurrency(wantsAmount)}/mo
+- 20% Wealth Building / FIRE: ${formatCurrency(investAmount)}/mo
 ----------------------------------
 🛡️ Emergency Reserve (6 Mo Needs): ${formatCurrency(emergencyFund)}
-🎯 FIRE Target (Rule of 300): ${formatCurrency(fireTargetGoal)}
-⏱️ Target FIRE Timeframe: ${yearsToFire} Years (Retire at Age ${targetAge} with ${effectiveReturnRate}% net ROI)`;
+🎯 FIRE Freedom Target (Rule of 300): ${formatCurrency(fireTargetGoal)}
+⏱️ Horizon to FIRE: ${yearsToFire} Years (Retire at Age ${targetAge} @ ${effectiveReturnRate}% net ROI)`;
 
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -144,7 +139,7 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
   return (
     <div className={`min-h-screen font-sans ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       
-      {/* Navigation Bar */}
+      {/* Navigation */}
       <header className={`border-b sticky top-0 z-30 backdrop-blur-md ${isDark ? 'bg-slate-950/90 border-slate-800' : 'bg-white/90 border-slate-200'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           
@@ -174,7 +169,7 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
               }`}
             >
               {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
-              {copied ? 'Copied to Clipboard' : 'Export Plan'}
+              {copied ? 'Plan Copied' : 'Export Plan'}
             </button>
 
             <button
@@ -222,7 +217,7 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
           <div className={`p-5 rounded-xl border ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                6-Mo Emergency Fund
+                6-Mo Emergency Reserve
               </span>
               <div className="p-1.5 rounded bg-blue-500/10 text-blue-400">
                 <ShieldCheck className="w-4 h-4" />
@@ -241,7 +236,7 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
           <div className={`p-5 rounded-xl border ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Monthly Investment ({activeInvestPct}%)
+                Monthly Investing ({activeInvestPct}%)
               </span>
               <div className="p-1.5 rounded bg-emerald-500/10 text-emerald-400">
                 <TrendingUp className="w-4 h-4" />
@@ -252,11 +247,11 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
             </div>
             <div className="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
               <Info className="w-3 h-3 text-slate-500 shrink-0" />
-              20% of monthly income to Pag-IBIG MP2 / Stocks
+              20% allocated to Pag-IBIG MP2 / Index Funds
             </div>
           </div>
 
-          {/* Card 4: FIRE Timeframe */}
+          {/* Card 4: Horizon to FIRE */}
           <div className={`p-5 rounded-xl border ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -271,7 +266,7 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
             </div>
             <div className="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
               <Info className="w-3 h-3 text-slate-500 shrink-0" />
-              Target Age: {targetAge} (at {effectiveReturnRate}% net ROI)
+              Retire at Age {targetAge} ({effectiveReturnRate}% net ROI)
             </div>
           </div>
 
@@ -288,7 +283,7 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
               <div className="flex items-center justify-between mb-4">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                   <Wallet className="w-4 h-4 text-emerald-400" />
-                  Monthly Income
+                  Monthly Net Take-Home
                 </label>
                 <div className="flex items-center bg-slate-950 rounded-md p-0.5 border border-slate-800 text-[11px]">
                   <button
@@ -307,7 +302,7 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
               </div>
 
               {/* Income Field */}
-              <div className="relative mb-5">
+              <div className="relative mb-4">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-500">
                   {currencySymbol}
                 </span>
@@ -322,8 +317,13 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
                       ? 'bg-slate-950 border-slate-700 text-slate-100 focus:border-emerald-500'
                       : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
                   }`}
-                  placeholder="22,500"
+                  placeholder="25,000"
                 />
+              </div>
+
+              <div className="flex justify-between text-xs text-slate-400 mb-5 pb-3 border-b border-slate-800">
+                <span>Annual Equivalent:</span>
+                <span className="font-bold text-slate-200">{formatCurrency(annualIncome)}/yr</span>
               </div>
 
               {/* Slider */}
@@ -344,17 +344,18 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
                 />
               </div>
 
-              {/* Presets */}
+              {/* Accurate Career Benchmark Tiers */}
               <div>
-                <span className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                  Philippine Salary Benchmarks
+                <span className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                  <Briefcase className="w-3.5 h-3.5 text-indigo-400" />
+                  Philippine Career Benchmarks
                 </span>
-                <div className="grid grid-cols-2 gap-2">
-                  {INCOME_PRESETS.map((preset) => (
+                <div className="space-y-2">
+                  {SALARY_BENCHMARKS.map((preset) => (
                     <button
                       key={preset.value}
                       onClick={() => setMonthlyIncome(preset.value)}
-                      className={`px-3 py-2 rounded-lg text-xs text-left transition-all border ${
+                      className={`w-full px-3 py-2 rounded-lg text-xs text-left transition-all border flex items-center justify-between ${
                         monthlyIncome === preset.value
                           ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400 font-semibold'
                           : isDark
@@ -362,8 +363,14 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
                           : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
                       }`}
                     >
-                      <div className="font-bold text-slate-200">{currencySymbol}{(preset.value).toLocaleString()}</div>
-                      <div className="text-[10px] text-slate-400 truncate">{preset.label}</div>
+                      <div>
+                        <div className="font-bold text-slate-200">{preset.label}</div>
+                        <div className="text-[11px] text-slate-400">{preset.desc}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-emerald-400">{currencySymbol}{(preset.value / 1000).toFixed(0)}k/mo</div>
+                        <div className="text-[10px] text-slate-500">({currencySymbol}${(preset.annual / 1000000).toFixed(2)}M/yr)</div>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -375,7 +382,7 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
               <div className="flex items-center justify-between mb-4">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                   <Sliders className="w-4 h-4 text-indigo-400" />
-                  Budget Allocation Strategy
+                  Budget Allocation Ratios
                 </label>
                 <button
                   onClick={() => {
@@ -392,13 +399,13 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
                       : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'
                   }`}
                 >
-                  {customMode ? 'Custom Mode' : 'Standard 50/30/20'}
+                  {customMode ? 'Custom' : 'Standard 50/30/20'}
                 </button>
               </div>
 
               {!customMode ? (
                 <div className="text-xs text-slate-400 leading-relaxed bg-slate-950/60 p-3 rounded-lg border border-slate-800">
-                  <span className="font-semibold text-slate-200 block mb-0.5">50/20/30 Model Rules:</span>
+                  <span className="font-semibold text-slate-200 block mb-0.5">50/20/30 Budget Allocation:</span>
                   <strong>50% Needs</strong> ({formatCurrency(needsAmount)}) • <strong>30% Wants</strong> ({formatCurrency(wantsAmount)}) • <strong>20% Investing</strong> ({formatCurrency(investAmount)})
                 </div>
               ) : (
@@ -454,13 +461,13 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
             {/* Growth Assumptions */}
             <div className={`p-6 rounded-xl border ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
               <span className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
-                Realistic Growth Benchmarks
+                Growth Assumptions
               </span>
 
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-400">Current Savings / Nest Egg:</span>
+                    <span className="text-slate-400">Current Savings / Portfolio:</span>
                     <span className="font-semibold text-slate-200">{formatCurrency(currentSavings)}</span>
                   </div>
                   <input
@@ -476,7 +483,7 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
 
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-400">Expected Annual ROI:</span>
+                    <span className="text-slate-400">Annual Return Rate (ROI):</span>
                     <span className="font-semibold text-emerald-400">{annualReturnRate}% p.a.</span>
                   </div>
                   <input
@@ -488,11 +495,6 @@ Monthly Net Income: ${formatCurrency(monthlyIncome)}
                     onChange={(e) => setAnnualReturnRate(Number(e.target.value))}
                     className="w-full h-1.5 bg-slate-800 rounded appearance-none accent-emerald-500"
                   />
-                  <div className="flex justify-between text-[10px] text-slate-500 mt-1">
-                    <span>Conservative (5%)</span>
-                    <span>Pag-IBIG MP2 (7%)</span>
-                    <span>S&P 500 (10%)</span>
-                  </div>
                 </div>
 
                 <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
