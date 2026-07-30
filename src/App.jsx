@@ -179,7 +179,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-b: 2px solid #10b981;
+      border-bottom: 2px solid #10b981;
       padding-bottom: 16px;
       margin-bottom: 24px;
     }
@@ -237,7 +237,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
     .footer {
       margin-top: 40px;
       padding-top: 16px;
-      border-t: 1px solid #e2e8f0;
+      border-top: 1px solid #e2e8f0;
       font-size: 11px;
       color: #94a3b8;
       display: flex;
@@ -1063,7 +1063,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                 </p>
               </div>
             ) : (
-              /* SUCCESS VIEW WITH INSTANT PDF PRINT / DOWNLOAD & MONETIZATION LINKS */
+              /* SUCCESS VIEW WITH INSTANT PDF PRINT & USER REFERRAL LINK */
               <div className="space-y-5 text-center py-2">
                 <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/30">
                   <Check className="w-6 h-6" />
@@ -1084,7 +1084,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                   Open & Save Official PDF Document
                 </button>
 
-                {/* MONETIZATION & AFFILIATE RECOMMENDATION CARDS */}
+                {/* USER'S EMBEDDED REFERRAL LINK & MONETIZATION CARDS */}
                 <div className="pt-4 border-t border-slate-800 text-left space-y-3">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
                     🚀 Recommended Next Steps
@@ -1092,18 +1092,19 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
 
                   <div className="grid grid-cols-1 gap-2 text-xs">
                     
+                    {/* User's MariBank Referral Link */}
                     <a
-                      href="https://www.seabank.com.ph"
+                      href="https://maribank.ph/c/earnfreemoney?referralCode=BM284604"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 rounded-lg bg-slate-950 border border-slate-800 hover:border-emerald-500/50 transition-all flex items-center justify-between group"
+                      className="p-3 rounded-lg bg-slate-950 border border-emerald-500/40 hover:border-emerald-400 transition-all flex items-center justify-between group shadow-sm shadow-emerald-500/10"
                     >
                       <div>
-                        <div className="font-semibold text-slate-200 group-hover:text-emerald-400 transition-colors flex items-center gap-1.5">
-                          High-Yield Emergency Reserve (4.5% p.a.)
-                          <ExternalLink className="w-3 h-3 text-slate-500" />
+                        <div className="font-semibold text-emerald-400 group-hover:text-emerald-300 transition-colors flex items-center gap-1.5">
+                          MariBank (High-Yield 4.5% p.a. Savings)
+                          <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
                         </div>
-                        <div className="text-[11px] text-slate-400">Park your {formatCurrency(emergencyFund)} safety net in SeaBank / Maya</div>
+                        <div className="text-[11px] text-slate-400">Park your {formatCurrency(emergencyFund)} safety net & earn daily interest (Code: BM284604)</div>
                       </div>
                     </a>
 
