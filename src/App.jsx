@@ -75,7 +75,7 @@ const FAQS = [
 export default function App() {
   const [isDark, setIsDark] = useState(true);
 
-  // Step-by-step Onboarding State (Step 1: Name/Age -> Step 2: Salary/Savings -> Step 3: Complete Dashboard)
+  // Step-by-step Onboarding State
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
 
@@ -114,19 +114,24 @@ export default function App() {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState('breakdown');
 
+  // Safe Numerical Fallbacks
+  const safeIncome = Math.max(1, Number(monthlyIncome) || 25000);
+  const safeSavings = Math.max(0, Number(currentSavings) || 0);
+  const safeAge = Math.max(18, Number(currentAge) || 25);
+
   // Allocation Ratios
   const activeNeedsPct = customMode ? needsPct : 50;
   const activeWantsPct = customMode ? wantsPct : 30;
   const activeInvestPct = customMode ? investPct : 20;
 
   // Exact Calculations
-  const needsAmount = useMemo(() => monthlyIncome * (activeNeedsPct / 100), [monthlyIncome, activeNeedsPct]);
-  const wantsAmount = useMemo(() => monthlyIncome * (activeWantsPct / 100), [monthlyIncome, activeWantsPct]);
-  const investAmount = useMemo(() => monthlyIncome * (activeInvestPct / 100), [monthlyIncome, activeInvestPct]);
+  const needsAmount = useMemo(() => safeIncome * (activeNeedsPct / 100), [safeIncome, activeNeedsPct]);
+  const wantsAmount = useMemo(() => safeIncome * (activeWantsPct / 100), [safeIncome, activeWantsPct]);
+  const investAmount = useMemo(() => safeIncome * (activeInvestPct / 100), [safeIncome, activeInvestPct]);
   
-  const fireTargetGoal = useMemo(() => monthlyIncome * 300, [monthlyIncome]);
-  const annualIncome = useMemo(() => monthlyIncome * 12, [monthlyIncome]);
-  const emergencyFund = useMemo(() => (monthlyIncome * (activeNeedsPct / 100)) * 6, [monthlyIncome, activeNeedsPct]);
+  const fireTargetGoal = useMemo(() => safeIncome * 300, [safeIncome]);
+  const annualIncome = useMemo(() => safeIncome * 12, [safeIncome]);
+  const emergencyFund = useMemo(() => (safeIncome * (activeNeedsPct / 100)) * 6, [safeIncome, activeNeedsPct]);
 
   const effectiveReturnRate = useMemo(() => {
     return adjustForInflation ? Math.max(0.5, annualReturnRate - inflationRate) : annualReturnRate;
@@ -135,23 +140,23 @@ export default function App() {
   const projectionData = useMemo(() => {
     const data = [];
     const monthlyReturnRate = effectiveReturnRate / 100 / 12;
-    let portfolio = currentSavings;
+    let portfolio = safeSavings;
     const maxYears = 45;
 
-    data.push({ year: 0, age: currentAge, portfolio: Math.round(portfolio) });
+    data.push({ year: 0, age: safeAge, portfolio: Math.round(portfolio) });
 
     for (let m = 1; m <= maxYears * 12; m++) {
       portfolio = portfolio * (1 + monthlyReturnRate) + investAmount;
       if (m % 12 === 0) {
         data.push({
           year: m / 12,
-          age: Number(currentAge) + (m / 12),
+          age: safeAge + (m / 12),
           portfolio: Math.round(portfolio),
         });
       }
     }
     return data;
-  }, [investAmount, currentSavings, effectiveReturnRate, currentAge]);
+  }, [investAmount, safeSavings, effectiveReturnRate, safeAge]);
 
   const yearsToFire = useMemo(() => {
     const match = projectionData.find((d) => d.portfolio >= fireTargetGoal);
@@ -159,15 +164,15 @@ export default function App() {
   }, [projectionData, fireTargetGoal]);
 
   const targetAge = useMemo(() => {
-    return typeof yearsToFire === 'number' ? Number(currentAge) + yearsToFire : 'N/A';
-  }, [yearsToFire, currentAge]);
+    return typeof yearsToFire === 'number' ? safeAge + yearsToFire : 'N/A';
+  }, [yearsToFire, safeAge]);
 
-  const formatCurrency = (val) => `${currencySymbol}${Math.round(val).toLocaleString('en-US')}`;
+  const formatCurrency = (val) => `${currencySymbol}${Math.round(val || 0).toLocaleString('en-US')}`;
 
   const handleCopySummary = () => {
     const text = `HowToRetire.info - FIRE Plan for ${userName || 'Investor'}
 ----------------------------------
-Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annualIncome)})
+Monthly Income: ${formatCurrency(safeIncome)} (Annual: ${formatCurrency(annualIncome)})
 - 50% Needs: ${formatCurrency(needsAmount)}/mo
 - 30% Wants: ${formatCurrency(wantsAmount)}/mo
 - 20% Investing: ${formatCurrency(investAmount)}/mo
@@ -224,7 +229,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
       <div class="subtitle">50/20/30 Financial Independence Roadmap</div>
     </div>
     <div style="text-align: right;">
-      <div style="font-size: 12px; font-weight: 700;">${userName || 'Valued Client'} (Age ${currentAge})</div>
+      <div style="font-size: 12px; font-weight: 700;">${userName || 'Valued Client'} (Age ${safeAge})</div>
       <div style="font-size: 11px; color: #64748b;">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
     </div>
   </div>
@@ -284,7 +289,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
       <tr style="font-weight: 700; background: #f8fafc;">
         <td>Total Net Income</td>
         <td>100%</td>
-        <td>${formatCurrency(monthlyIncome)}</td>
+        <td>${formatCurrency(safeIncome)}</td>
         <td>${formatCurrency(annualIncome)}</td>
       </tr>
     </tbody>
@@ -314,11 +319,11 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
   return (
     <div className={`min-h-screen font-sans ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       
-      {/* ONBOARDING WIZARD (Shown when first opening website) */}
+      {/* ONBOARDING WIZARD */}
       {!hasCompletedOnboarding ? (
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className={`w-full max-w-xl p-8 rounded-2xl border shadow-2xl space-y-6 ${
-            isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+            isDark ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
           }`}>
             
             {/* Header / Brand */}
@@ -344,7 +349,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
 
             {/* STEP 1: Name and Age */}
             {onboardingStep === 1 && (
-              <div className="space-y-5 animate-fade-in">
+              <div className="space-y-5">
                 <div>
                   <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
                     Welcome to HowToRetire.info 👋
@@ -381,7 +386,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                       min="18"
                       max="80"
                       value={currentAge || ''}
-                      onChange={(e) => setCurrentAge(Math.max(18, parseInt(e.target.value) || 18))}
+                      onChange={(e) => setCurrentAge(e.target.value === '' ? '' : Math.max(18, parseInt(e.target.value) || 18))}
                       className={`w-full px-4 py-3 text-sm font-semibold rounded-xl border outline-none ${
                         isDark ? 'bg-slate-950 border-slate-700 text-slate-100 focus:border-emerald-500' : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
                       }`}
@@ -401,7 +406,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
 
             {/* STEP 2: Monthly Salary and Current Savings */}
             {onboardingStep === 2 && (
-              <div className="space-y-5 animate-fade-in">
+              <div className="space-y-5">
                 <div>
                   <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
                     Your Financial Starting Point 💰
@@ -426,7 +431,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                         min="0"
                         step="500"
                         value={monthlyIncome || ''}
-                        onChange={(e) => setMonthlyIncome(Math.max(0, parseFloat(e.target.value) || 0))}
+                        onChange={(e) => setMonthlyIncome(e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0))}
                         className={`w-full pl-10 pr-4 py-3 text-lg font-bold rounded-xl border outline-none ${
                           isDark ? 'bg-slate-950 border-slate-700 text-slate-100 focus:border-emerald-500' : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
                         }`}
@@ -449,7 +454,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                         min="0"
                         step="1000"
                         value={currentSavings || ''}
-                        onChange={(e) => setCurrentSavings(Math.max(0, parseFloat(e.target.value) || 0))}
+                        onChange={(e) => setCurrentSavings(e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0))}
                         className={`w-full pl-10 pr-4 py-3 text-lg font-bold rounded-xl border outline-none ${
                           isDark ? 'bg-slate-950 border-slate-700 text-slate-100 focus:border-emerald-500' : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
                         }`}
@@ -479,9 +484,8 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
           </div>
         </div>
       ) : (
-        /* STEP 3: FULL PERSONALIZED DASHBOARD REVEAL */
+        /* STEP 3: FULL PERSONALIZED DASHBOARD */
         <>
-          {/* Navigation Header */}
           <header className={`border-b sticky top-0 z-30 backdrop-blur-md ${isDark ? 'bg-slate-950/90 border-slate-800' : 'bg-white/90 border-slate-200'}`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
               
@@ -553,7 +557,6 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
             </div>
           </header>
 
-          {/* Personalized Banner */}
           <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-indigo-950 border-b border-emerald-500/20 py-3 px-4 text-center text-xs">
             <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-slate-300">
               <div className="flex items-center gap-2">
@@ -574,10 +577,8 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
             </div>
           </div>
 
-          {/* Main Dashboard Container */}
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
             
-            {/* Metric Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               
               <div className={`p-5 rounded-xl border ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
@@ -594,7 +595,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                 </div>
                 <div className="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
                   <Info className="w-3 h-3 text-slate-500 shrink-0" />
-                  Rule of 300: Income ({formatCurrency(monthlyIncome)}) × 300
+                  Rule of 300: Income ({formatCurrency(safeIncome)}) × 300
                 </div>
               </div>
 
@@ -654,7 +655,6 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
 
             </div>
 
-            {/* Form and Chart Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               
               <div className="lg:col-span-5 space-y-6">
@@ -690,7 +690,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                       min="0"
                       step="500"
                       value={monthlyIncome || ''}
-                      onChange={(e) => setMonthlyIncome(Math.max(0, parseFloat(e.target.value) || 0))}
+                      onChange={(e) => setMonthlyIncome(e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0))}
                       className={`w-full pl-10 pr-4 py-3 text-xl font-bold rounded-lg border transition-all outline-none ${
                         isDark
                           ? 'bg-slate-950 border-slate-700 text-slate-100 focus:border-emerald-500'
@@ -708,7 +708,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                   <div className="space-y-1.5 mb-6">
                     <div className="flex justify-between text-[11px] text-slate-500">
                       <span>{currencySymbol}10,000</span>
-                      <span className="font-semibold text-slate-300">{formatCurrency(monthlyIncome)}</span>
+                      <span className="font-semibold text-slate-300">{formatCurrency(safeIncome)}</span>
                       <span>{currencySymbol}300,000</span>
                     </div>
                     <input
@@ -716,7 +716,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                       min="10000"
                       max="300000"
                       step="2500"
-                      value={monthlyIncome}
+                      value={safeIncome}
                       onChange={(e) => setMonthlyIncome(Number(e.target.value))}
                       className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                     />
@@ -733,7 +733,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                           key={preset.value}
                           onClick={() => setMonthlyIncome(preset.value)}
                           className={`w-full px-3 py-2 rounded-lg text-xs text-left transition-all border flex items-center justify-between ${
-                            monthlyIncome === preset.value
+                            safeIncome === preset.value
                               ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400 font-semibold'
                               : isDark
                               ? 'bg-slate-950 hover:bg-slate-800 text-slate-400 border-slate-800'
@@ -843,14 +843,14 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                     <div>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-slate-400">Current Savings / Portfolio:</span>
-                        <span className="font-semibold text-slate-200">{formatCurrency(currentSavings)}</span>
+                        <span className="font-semibold text-slate-200">{formatCurrency(safeSavings)}</span>
                       </div>
                       <input
                         type="range"
                         min="0"
                         max="500000"
                         step="5000"
-                        value={currentSavings}
+                        value={safeSavings}
                         onChange={(e) => setCurrentSavings(Number(e.target.value))}
                         className="w-full h-1.5 bg-slate-800 rounded appearance-none accent-emerald-500"
                       />
@@ -928,7 +928,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                           Cash Flow Allocation
                         </span>
                         <span className="text-xs font-semibold text-slate-300">
-                          Monthly Total: {formatCurrency(monthlyIncome)}
+                          Monthly Total: {formatCurrency(safeIncome)}
                         </span>
                       </div>
 
@@ -1073,7 +1073,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                           <YAxis stroke="#64748b" fontSize={11} tickFormatter={(v) => `${currencySymbol}${(v / 1000000).toFixed(1)}M`} />
                           <RechartsTooltip
                             formatter={(val) => formatCurrency(val)}
-                            labelFormatter={(yr) => `Year ${yr} (Age ${Number(currentAge) + Number(yr)})`}
+                            labelFormatter={(yr) => `Year ${yr} (Age ${safeAge + Number(yr)})`}
                             contentStyle={{
                               backgroundColor: '#0f172a',
                               borderColor: '#334155',
@@ -1151,7 +1151,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                       Get Your Official FIRE PDF Strategy
                     </h3>
                     <p className="text-xs text-slate-400">
-                      Formatted 1-Page PDF Document for {formatCurrency(monthlyIncome)} monthly cash flow
+                      Formatted 1-Page PDF Document for {formatCurrency(safeIncome)} monthly cash flow
                     </p>
                   </div>
                 </div>
@@ -1232,7 +1232,6 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                   </span>
 
                   <div className="grid grid-cols-1 gap-2 text-xs">
-                    
                     <a
                       href="https://maribank.ph/c/earnfreemoney?referralCode=BM284604"
                       target="_blank"
@@ -1262,7 +1261,6 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
                         <div className="text-[11px] text-slate-400">Automate your {formatCurrency(investAmount)}/mo wealth building</div>
                       </div>
                     </a>
-
                   </div>
                 </div>
 
@@ -1273,7 +1271,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
         </div>
       )}
 
-      {/* LEGAL DISCLAIMER & COMPLIANCE MODAL */}
+      {/* LEGAL DISCLAIMER MODAL */}
       {isLegalModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
           <div className={`relative w-full max-w-xl p-6 rounded-2xl border shadow-2xl transition-all ${
@@ -1356,7 +1354,7 @@ Monthly Income: ${formatCurrency(monthlyIncome)} (Annual: ${formatCurrency(annua
         </div>
       )}
 
-      {/* Footer with Legal Compliance Links */}
+      {/* Footer */}
       <footer className="border-t border-slate-800/60 mt-16 py-8 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="space-y-1 text-center md:text-left">
