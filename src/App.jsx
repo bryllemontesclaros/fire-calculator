@@ -2,11 +2,6 @@ import React, { useState, useMemo } from 'react';
 import {
   TrendingUp,
   ShieldCheck,
-  ShoppingBag,
-  Home,
-  Copy,
-  Check,
-  Sliders,
   Flame,
   PieChart as PieIcon,
   LineChart as LineIcon,
@@ -16,26 +11,29 @@ import {
   Wallet,
   Calendar,
   Briefcase,
-  Mail,
-  Download,
-  X,
-  ExternalLink,
-  Sparkles,
-  ArrowRight,
-  CheckCircle2,
-  Lock,
+  Copy,
+  Check,
+  Sliders,
   Printer,
   Scale,
-  Shield,
   HelpCircle,
   ChevronDown,
   User,
   RotateCcw,
   Zap,
   Rocket,
+  ArrowRight,
+  CheckCircle2,
+  Lock,
+  ExternalLink,
+  Sparkles,
   Award,
   Share2,
-  PartyPopper
+  PartyPopper,
+  X,
+  Target,
+  ChevronRight,
+  Star
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -80,20 +78,21 @@ const FAQS = [
 export default function App() {
   const [isDark, setIsDark] = useState(true);
 
-  // Step-by-step Onboarding State
+  // Caltiger-style Wizard Modal State
+  const [showWizardModal, setShowWizardModal] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const [hasCalculated, setHasCalculated] = useState(true);
 
   // User Profile State
-  const [userName, setUserName] = useState('');
+  const [userName, setUserName] = useState('Alex');
   const [currentAge, setCurrentAge] = useState(25);
 
   // Financial Inputs
-  const [monthlyIncome, setMonthlyIncome] = useState(25000);
-  const [currentSavings, setCurrentSavings] = useState(25000);
+  const [monthlyIncome, setMonthlyIncome] = useState(45000);
+  const [currentSavings, setCurrentSavings] = useState(50000);
   const [currencySymbol, setCurrencySymbol] = useState('₱');
 
-  // Custom Ratios
+  // Custom Allocation
   const [customMode, setCustomMode] = useState(false);
   const [needsPct, setNeedsPct] = useState(50);
   const [wantsPct, setWantsPct] = useState(30);
@@ -104,8 +103,8 @@ export default function App() {
   const [inflationRate, setInflationRate] = useState(3.0);
   const [adjustForInflation, setAdjustForInflation] = useState(true);
 
-  // Modal & Lead Gen State
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // PDF & Lead Modal State
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [emailInput, setEmailInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -129,7 +128,7 @@ export default function App() {
   const activeWantsPct = customMode ? wantsPct : 30;
   const activeInvestPct = customMode ? investPct : 20;
 
-  // Calculations
+  // Core Math Calculations
   const needsAmount = useMemo(() => safeIncome * (activeNeedsPct / 100), [safeIncome, activeNeedsPct]);
   const wantsAmount = useMemo(() => safeIncome * (activeWantsPct / 100), [safeIncome, activeWantsPct]);
   const investAmount = useMemo(() => safeIncome * (activeInvestPct / 100), [safeIncome, activeInvestPct]);
@@ -174,8 +173,8 @@ export default function App() {
 
   // Freedom Score / Readiness Index (0 - 100%)
   const freedomScore = useMemo(() => {
-    const savingsRatio = Math.min(100, (safeSavings / (safeIncome * 6)) * 40); // Max 40 pts for 6mo emergency fund
-    const investRatio = Math.min(60, (activeInvestPct / 20) * 60); // Max 60 pts for 20%+ investing rate
+    const savingsRatio = Math.min(40, (safeSavings / (safeIncome * 6)) * 40);
+    const investRatio = Math.min(60, (activeInvestPct / 20) * 60);
     return Math.min(100, Math.round(savingsRatio + investRatio));
   }, [safeSavings, safeIncome, activeInvestPct]);
 
@@ -328,92 +327,858 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
 
   return (
     <div className={`min-h-screen font-sans selection:bg-emerald-500 selection:text-slate-950 ${
-      isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+      isDark ? 'bg-[#090d16] text-slate-100' : 'bg-slate-50 text-slate-900'
     }`}>
       
-      {/* ONBOARDING QUIZ WIZARD (Viral + Friendly Vibe) */}
-      {!hasCompletedOnboarding ? (
-        <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* CALTIGER-STYLE STICKY SAAS HEADER */}
+      <header className={`border-b sticky top-0 z-40 backdrop-blur-xl ${
+        isDark ? 'bg-[#090d16]/85 border-slate-800/80' : 'bg-white/85 border-slate-200'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           
-          {/* Subtle Background Glow Spheres */}
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-emerald-500/20">
+              <Flame className="w-5 h-5 fill-slate-950" />
+            </div>
+            <div>
+              <span className="font-black text-lg tracking-tight flex items-center gap-1.5">
+                HowToRetire<span className="text-emerald-400">.info</span>
+                <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  AI FIRE Engine
+                </span>
+              </span>
+            </div>
+          </div>
 
-          <div className={`relative w-full max-w-xl p-8 rounded-3xl border shadow-2xl space-y-6 backdrop-blur-xl transition-all ${
-            isDark ? 'bg-slate-900/90 border-slate-800 text-slate-100 shadow-emerald-500/5' : 'bg-white/90 border-slate-200 text-slate-900'
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                setOnboardingStep(1);
+                setShowWizardModal(true);
+              }}
+              className="px-4 py-2 rounded-2xl text-xs font-extrabold bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 transition-all shadow-md shadow-emerald-500/20 flex items-center gap-1.5"
+            >
+              <Zap className="w-3.5 h-3.5 fill-slate-950" />
+              Recalculate Freedom Score
+            </button>
+
+            <button
+              onClick={() => {
+                setIsSubmitted(false);
+                setIsPdfModalOpen(true);
+              }}
+              className="px-3.5 py-2 rounded-2xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 flex items-center gap-1.5 transition-all"
+            >
+              <Printer className="w-3.5 h-3.5 text-emerald-400" />
+              Download PDF
+            </button>
+
+            <button
+              onClick={handleCopySummary}
+              className={`px-3.5 py-2 rounded-2xl text-xs font-bold flex items-center gap-1.5 transition-all border ${
+                copied
+                  ? 'bg-emerald-600 text-white border-emerald-500'
+                  : isDark
+                  ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
+              }`}
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Share2 className="w-3.5 h-3.5 text-emerald-400" />}
+              {copied ? 'Copied Link!' : 'Share'}
+            </button>
+
+            <button
+              onClick={() => setIsDark(!isDark)}
+              className={`p-2 rounded-2xl border transition-all ${
+                isDark
+                  ? 'bg-slate-900 border-slate-800 text-amber-400 hover:bg-slate-800'
+                  : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
+              }`}
+              title="Toggle theme"
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+          </div>
+
+        </div>
+      </header>
+
+      {/* CALTIGER HERO BANNER */}
+      <section className="relative pt-12 pb-8 px-4 overflow-hidden border-b border-slate-800/80">
+        
+        {/* Glow Spheres Background */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[200px] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-5xl mx-auto text-center space-y-6 relative z-10">
+          
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-extrabold tracking-wide uppercase shadow-lg shadow-emerald-500/10">
+            <Sparkles className="w-3.5 h-3.5 fill-emerald-400" />
+            AI-Powered 50/20/30 FIRE & Budgeting System
+          </div>
+
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-100 max-w-4xl mx-auto leading-tight">
+            Retire 15 Years Earlier With Your Custom <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-indigo-400">FIRE Freedom Score</span>
+          </h1>
+
+          <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            Calculate your exact early retirement net worth target, 6-month safety reserve, and 50/20/30 wealth building allocation in 30 seconds.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <button
+              onClick={() => {
+                setOnboardingStep(1);
+                setShowWizardModal(true);
+              }}
+              className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider transition-all shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 active:scale-95"
+            >
+              <Zap className="w-4 h-4 fill-slate-950" />
+              Calculate Freedom Score →
+            </button>
+
+            <button
+              onClick={() => {
+                setIsSubmitted(false);
+                setIsPdfModalOpen(true);
+              }}
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-extrabold text-xs transition-all flex items-center justify-center gap-2"
+            >
+              <Printer className="w-4 h-4 text-emerald-400" />
+              Download Printable PDF
+            </button>
+          </div>
+
+          {/* Social Proof Strip */}
+          <div className="pt-4 flex items-center justify-center gap-6 text-xs text-slate-400">
+            <div className="flex items-center gap-1.5">
+              <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+              <span className="font-bold text-slate-200">Rule of 300 Approved</span>
+            </div>
+            <span>•</span>
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>Philippine Salary Tiers</span>
+            </div>
+            <span>•</span>
+            <div className="flex items-center gap-1.5">
+              <Lock className="w-4 h-4 text-blue-400" />
+              <span>100% Free & Private</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* MAIN BENTO GRID DASHBOARD */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+        
+        {/* CALTIGER BENTO HERO KPI CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+          
+          <div className={`p-6 rounded-3xl border transition-all duration-300 hover:border-emerald-500/40 ${
+            isDark ? 'bg-[#0f172a]/90 border-slate-800/80 shadow-2xl shadow-emerald-500/5' : 'bg-white border-slate-200 shadow-sm'
           }`}>
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                🎯 FIRE Target Goal
+              </span>
+              <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-400">
+                <Flame className="w-4 h-4 fill-emerald-400" />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-slate-100 tracking-tight">
+              {formatCurrency(fireTargetGoal)}
+            </div>
+            <div className="mt-2.5 text-[11px] text-slate-400 flex items-center gap-1">
+              <Info className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              Rule of 300: Income ({formatCurrency(safeIncome)}) × 300
+            </div>
+          </div>
+
+          <div className={`p-6 rounded-3xl border transition-all duration-300 hover:border-blue-500/40 ${
+            isDark ? 'bg-[#0f172a]/90 border-slate-800/80 shadow-2xl shadow-blue-500/5' : 'bg-white border-slate-200 shadow-sm'
+          }`}>
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                🛡️ Safety Reserve
+              </span>
+              <div className="p-2.5 rounded-2xl bg-blue-500/10 text-blue-400">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-slate-100 tracking-tight">
+              {formatCurrency(emergencyFund)}
+            </div>
+            <div className="mt-2.5 text-[11px] text-slate-400 flex items-center gap-1">
+              <Info className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              6 months of Needs ({formatCurrency(needsAmount)} × 6)
+            </div>
+          </div>
+
+          <div className={`p-6 rounded-3xl border transition-all duration-300 hover:border-emerald-500/40 ${
+            isDark ? 'bg-[#0f172a]/90 border-slate-800/80 shadow-2xl shadow-emerald-500/5' : 'bg-white border-slate-200 shadow-sm'
+          }`}>
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                💸 Monthly Investing
+              </span>
+              <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-400">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-emerald-400 tracking-tight">
+              {formatCurrency(investAmount)}<span className="text-xs text-slate-400 font-bold">/mo</span>
+            </div>
+            <div className="mt-2.5 text-[11px] text-slate-400 flex items-center gap-1">
+              <Info className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              20% allocated to Pag-IBIG MP2 & S&P 500
+            </div>
+          </div>
+
+          <div className={`p-6 rounded-3xl border transition-all duration-300 hover:border-indigo-500/40 ${
+            isDark ? 'bg-[#0f172a]/90 border-slate-800/80 shadow-2xl shadow-indigo-500/5' : 'bg-white border-slate-200 shadow-sm'
+          }`}>
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                ⏱️ Horizon to FIRE
+              </span>
+              <div className="p-2.5 rounded-2xl bg-indigo-500/10 text-indigo-400">
+                <Calendar className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-indigo-400 tracking-tight">
+              {yearsToFire} <span className="text-xs text-slate-400 font-bold">years</span>
+            </div>
+            <div className="mt-2.5 text-[11px] text-slate-400 flex items-center gap-1">
+              <PartyPopper className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+              Retire at Age {targetAge} ({effectiveReturnRate}% net ROI)
+            </div>
+          </div>
+
+        </div>
+
+        {/* MAIN CALCULATOR CONTROLS & GRAPH */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* LEFT BENTO COLUMN: INPUT CONTROLS */}
+          <div className="lg:col-span-5 space-y-6">
             
-            {/* Header / Brand Badge */}
-            <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-emerald-500/20">
-                  <Flame className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="font-extrabold text-lg tracking-tight">HowToRetire<span className="text-emerald-400">.info</span></span>
-                  <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Early Retirement Calculator</div>
+            <div className={`p-6 sm:p-7 rounded-3xl border ${
+              isDark ? 'bg-[#0f172a]/90 border-slate-800/80' : 'bg-white border-slate-200 shadow-sm'
+            }`}>
+              <div className="flex items-center justify-between mb-4">
+                <label className="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-emerald-400" />
+                  Monthly Net Take-Home
+                </label>
+                <div className="flex items-center bg-slate-950 rounded-2xl p-1 border border-slate-800 text-xs">
+                  <button
+                    onClick={() => setCurrencySymbol('₱')}
+                    className={`px-3 py-1 rounded-xl font-bold transition-all ${currencySymbol === '₱' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400'}`}
+                  >
+                    ₱ PHP
+                  </button>
+                  <button
+                    onClick={() => setCurrencySymbol('$')}
+                    className={`px-3 py-1 rounded-xl font-bold transition-all ${currencySymbol === '$' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400'}`}
+                  >
+                    $ USD
+                  </button>
                 </div>
               </div>
-              <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 fill-emerald-400" />
+
+              <div className="relative mb-4">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-500">
+                  {currencySymbol}
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  step="500"
+                  value={monthlyIncome || ''}
+                  onChange={(e) => setMonthlyIncome(e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0))}
+                  className={`w-full pl-12 pr-4 py-4 text-2xl font-black rounded-2xl border transition-all outline-none ${
+                    isDark
+                      ? 'bg-slate-950 border-slate-800 text-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20'
+                      : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
+                  }`}
+                  placeholder="25,000"
+                />
+              </div>
+
+              <div className="flex justify-between text-xs text-slate-400 mb-5 pb-3 border-b border-slate-800/80">
+                <span>Annual Net Income:</span>
+                <span className="font-extrabold text-slate-200">{formatCurrency(annualIncome)}/yr</span>
+              </div>
+
+              <div className="space-y-1.5 mb-6">
+                <div className="flex justify-between text-[11px] text-slate-500 font-semibold">
+                  <span>{currencySymbol}10,000</span>
+                  <span className="font-extrabold text-emerald-400">{formatCurrency(safeIncome)}</span>
+                  <span>{currencySymbol}300,000</span>
+                </div>
+                <input
+                  type="range"
+                  min="10000"
+                  max="300000"
+                  step="2500"
+                  value={safeIncome}
+                  onChange={(e) => setMonthlyIncome(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                />
+              </div>
+
+              <div>
+                <span className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                  <Briefcase className="w-3.5 h-3.5 text-indigo-400" />
+                  Philippine Career Benchmarks
+                </span>
+                <div className="space-y-2">
+                  {SALARY_BENCHMARKS.map((preset) => (
+                    <button
+                      key={preset.value}
+                      onClick={() => setMonthlyIncome(preset.value)}
+                      className={`w-full px-4 py-3 rounded-2xl text-xs text-left transition-all border flex items-center justify-between ${
+                        safeIncome === preset.value
+                          ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400 font-extrabold shadow-lg shadow-emerald-500/5'
+                          : isDark
+                          ? 'bg-slate-950 hover:bg-slate-800 text-slate-400 border-slate-800'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                      }`}
+                    >
+                      <div>
+                        <div className="font-bold text-slate-200">{preset.label}</div>
+                        <div className="text-[11px] text-slate-400">{preset.desc}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-black text-emerald-400">{currencySymbol}{(preset.value / 1000).toFixed(0)}k/mo</div>
+                        <div className="text-[10px] text-slate-500">({currencySymbol}${(preset.annual / 1000000).toFixed(2)}M/yr)</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className={`p-6 sm:p-7 rounded-3xl border ${
+              isDark ? 'bg-[#0f172a]/90 border-slate-800/80' : 'bg-white border-slate-200 shadow-sm'
+            }`}>
+              <div className="flex items-center justify-between mb-4">
+                <label className="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                  <Sliders className="w-4 h-4 text-indigo-400" />
+                  Budget Allocation Ratios
+                </label>
+                <button
+                  onClick={() => {
+                    setCustomMode(!customMode);
+                    if (customMode) {
+                      setNeedsPct(50);
+                      setWantsPct(30);
+                      setInvestPct(20);
+                    }
+                  }}
+                  className={`text-[11px] px-3 py-1 rounded-xl font-bold transition-all border ${
+                    customMode
+                      ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40'
+                      : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'
+                  }`}
+                >
+                  {customMode ? 'Custom' : 'Standard 50/30/20'}
+                </button>
+              </div>
+
+              {!customMode ? (
+                <div className="text-xs text-slate-400 leading-relaxed bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+                  <span className="font-bold text-slate-200 block mb-1">50/20/30 Budget Allocation:</span>
+                  <span className="text-blue-400 font-bold">50% Needs</span> ({formatCurrency(needsAmount)}) • <span className="text-amber-400 font-bold">30% Wants</span> ({formatCurrency(wantsAmount)}) • <span className="text-emerald-400 font-bold">20% Investing</span> ({formatCurrency(investAmount)})
+                </div>
+              ) : (
+                <div className="space-y-4 pt-1">
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-blue-400 font-bold">Needs ({needsPct}%):</span>
+                      <span className="font-black text-slate-200">{formatCurrency(needsAmount)}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="30"
+                      max="70"
+                      value={needsPct}
+                      onChange={(e) => setNeedsPct(Number(e.target.value))}
+                      className="w-full h-1.5 bg-slate-800 rounded appearance-none accent-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-amber-400 font-bold">Wants ({wantsPct}%):</span>
+                      <span className="font-black text-slate-200">{formatCurrency(wantsAmount)}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="10"
+                      max="50"
+                      value={wantsPct}
+                      onChange={(e) => setWantsPct(Number(e.target.value))}
+                      className="w-full h-1.5 bg-slate-800 rounded appearance-none accent-amber-500"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-emerald-400 font-bold">Investing ({investPct}%):</span>
+                      <span className="font-black text-slate-200">{formatCurrency(investAmount)}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="5"
+                      max="60"
+                      value={investPct}
+                      onChange={(e) => setInvestPct(Number(e.target.value))}
+                      className="w-full h-1.5 bg-slate-800 rounded appearance-none accent-emerald-500"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className={`p-6 sm:p-7 rounded-3xl border ${
+              isDark ? 'bg-[#0f172a]/90 border-slate-800/80' : 'bg-white border-slate-200 shadow-sm'
+            }`}>
+              <span className="block text-xs font-black uppercase tracking-wider text-slate-300 mb-4">
+                Growth & ROI Assumptions
+              </span>
+
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-400">Current Savings / Portfolio:</span>
+                    <span className="font-bold text-slate-200">{formatCurrency(safeSavings)}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="500000"
+                    step="5000"
+                    value={safeSavings}
+                    onChange={(e) => setCurrentSavings(Number(e.target.value))}
+                    className="w-full h-1.5 bg-slate-800 rounded appearance-none accent-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-400">Annual Return Rate (ROI):</span>
+                    <span className="font-black text-emerald-400">{annualReturnRate}% p.a.</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="4"
+                    max="12"
+                    step="0.5"
+                    value={annualReturnRate}
+                    onChange={(e) => setAnnualReturnRate(Number(e.target.value))}
+                    className="w-full h-1.5 bg-slate-800 rounded appearance-none accent-emerald-500"
+                  />
+                </div>
+
+                <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                  <label className="text-xs text-slate-300 flex items-center gap-2 cursor-pointer font-medium">
+                    <input
+                      type="checkbox"
+                      checked={adjustForInflation}
+                      onChange={(e) => setAdjustForInflation(e.target.checked)}
+                      className="rounded accent-emerald-500"
+                    />
+                    Adjust for Inflation ({inflationRate}% p.a.)
+                  </label>
+                  <span className="text-xs font-bold text-slate-400">
+                    Net ROI: {effectiveReturnRate}%
+                  </span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* RIGHT BENTO COLUMN: CHARTS & BREAKDOWN */}
+          <div className="lg:col-span-7 space-y-6">
+
+            <div className="flex border-b border-slate-800/80 gap-6">
+              <button
+                onClick={() => setActiveTab('breakdown')}
+                className={`pb-3 text-xs font-black flex items-center gap-2 border-b-2 transition-all ${
+                  activeTab === 'breakdown'
+                    ? 'border-emerald-500 text-emerald-400'
+                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <PieIcon className="w-4 h-4" />
+                Monthly Cash Flow
+              </button>
+
+              <button
+                onClick={() => setActiveTab('fire')}
+                className={`pb-3 text-xs font-black flex items-center gap-2 border-b-2 transition-all ${
+                  activeTab === 'fire'
+                    ? 'border-emerald-500 text-emerald-400'
+                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <LineIcon className="w-4 h-4" />
+                FIRE Accumulation Curve ({yearsToFire} yrs)
+              </button>
+            </div>
+
+            {activeTab === 'breakdown' && (
+              <div className="space-y-6">
+                
+                <div className={`p-6 sm:p-7 rounded-3xl border ${
+                  isDark ? 'bg-[#0f172a]/90 border-slate-800/80' : 'bg-white border-slate-200 shadow-sm'
+                }`}>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-xs font-black uppercase tracking-wider text-slate-400">
+                      Cash Flow Distribution
+                    </span>
+                    <span className="text-xs font-extrabold text-slate-200">
+                      Total Take-Home: {formatCurrency(safeIncome)}
+                    </span>
+                  </div>
+
+                  <div className="h-5 w-full bg-slate-950 rounded-2xl overflow-hidden flex border border-slate-800/80 mb-6">
+                    <div
+                      style={{ width: `${activeNeedsPct}%` }}
+                      className="bg-blue-500 transition-all duration-300 relative flex items-center justify-center text-[11px] font-black text-white"
+                    >
+                      {activeNeedsPct >= 15 && `50% Needs`}
+                    </div>
+                    <div
+                      style={{ width: `${activeWantsPct}%` }}
+                      className="bg-amber-500 transition-all duration-300 relative flex items-center justify-center text-[11px] font-black text-slate-950"
+                    >
+                      {activeWantsPct >= 15 && `30% Wants`}
+                    </div>
+                    <div
+                      style={{ width: `${activeInvestPct}%` }}
+                      className="bg-emerald-500 transition-all duration-300 relative flex items-center justify-center text-[11px] font-black text-slate-950"
+                    >
+                      {activeInvestPct >= 15 && `20% Invest`}
+                    </div>
+                  </div>
+
+                  <div className="divide-y divide-slate-800/60">
+                    <div className="py-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3.5 h-3.5 rounded-full bg-blue-500" />
+                        <div>
+                          <div className="text-xs font-bold text-slate-200">Living Needs ({activeNeedsPct}%)</div>
+                          <div className="text-[11px] text-slate-400">Rent, groceries, utilities, health, transport</div>
+                        </div>
+                      </div>
+                      <div className="text-base font-black text-slate-100">{formatCurrency(needsAmount)}<span className="text-xs text-slate-400 font-normal">/mo</span></div>
+                    </div>
+
+                    <div className="py-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3.5 h-3.5 rounded-full bg-amber-500" />
+                        <div>
+                          <div className="text-xs font-bold text-slate-200">Discretionary Wants ({activeWantsPct}%)</div>
+                          <div className="text-[11px] text-slate-400">Dining, entertainment, subscriptions, hobbies</div>
+                        </div>
+                      </div>
+                      <div className="text-base font-black text-slate-100">{formatCurrency(wantsAmount)}<span className="text-xs text-slate-400 font-normal">/mo</span></div>
+                    </div>
+
+                    <div className="py-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3.5 h-3.5 rounded-full bg-emerald-500" />
+                        <div>
+                          <div className="text-xs font-bold text-slate-200">Wealth Building ({activeInvestPct}%)</div>
+                          <div className="text-[11px] text-slate-400">Pag-IBIG MP2, S&P 500, REITs, emergency fund</div>
+                        </div>
+                      </div>
+                      <div className="text-base font-black text-emerald-400">{formatCurrency(investAmount)}<span className="text-xs text-slate-400 font-normal">/mo</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={`p-6 sm:p-7 rounded-3xl border ${
+                  isDark ? 'bg-[#0f172a]/90 border-slate-800/80' : 'bg-white border-slate-200 shadow-sm'
+                } flex flex-col md:flex-row items-center gap-6`}>
+                  <div className="w-full md:w-1/2 h-60 relative">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={pieData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={85}
+                          paddingAngle={4}
+                          dataKey="value"
+                        >
+                          {pieData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip
+                          formatter={(value) => formatCurrency(value)}
+                          contentStyle={{
+                            backgroundColor: '#0f172a',
+                            borderColor: '#334155',
+                            borderRadius: '12px',
+                            color: '#fff',
+                            fontSize: '12px'
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                      <span className="text-[10px] text-slate-400 uppercase font-black">Monthly Invest</span>
+                      <span className="text-lg font-black text-emerald-400">{formatCurrency(investAmount)}</span>
+                    </div>
+                  </div>
+
+                  <div className="w-full md:w-1/2 space-y-3">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 block">
+                      Target Financial Benchmarks
+                    </span>
+                    <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 text-xs">
+                      <div className="text-slate-400 mb-0.5">FIRE Goal (Rule of 300):</div>
+                      <div className="text-lg font-black text-slate-100">{formatCurrency(fireTargetGoal)}</div>
+                    </div>
+                    <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 text-xs">
+                      <div className="text-slate-400 mb-0.5">6-Month Safety Net Reserve:</div>
+                      <div className="text-lg font-black text-slate-100">{formatCurrency(emergencyFund)}</div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {activeTab === 'fire' && (
+              <div className={`p-6 sm:p-7 rounded-3xl border ${
+                isDark ? 'bg-[#0f172a]/90 border-slate-800/80' : 'bg-white border-slate-200 shadow-sm'
+              } space-y-4`}>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-sm font-black text-slate-100">
+                      Portfolio Accumulation Curve
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Accumulating {formatCurrency(fireTargetGoal)} with {formatCurrency(investAmount)}/mo at {effectiveReturnRate}% net ROI.
+                    </p>
+                  </div>
+
+                  <div className="px-3.5 py-1.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-black">
+                    Target: ~{yearsToFire} Years
+                  </div>
+                </div>
+
+                <div className="h-72 w-full pt-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={projectionData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="portfolioGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                      <XAxis dataKey="year" stroke="#64748b" fontSize={11} tickFormatter={(v) => `Yr ${v}`} />
+                      <YAxis stroke="#64748b" fontSize={11} tickFormatter={(v) => `${currencySymbol}${(v / 1000000).toFixed(1)}M`} />
+                      <RechartsTooltip
+                        formatter={(val) => formatCurrency(val)}
+                        labelFormatter={(yr) => `Year ${yr} (Age ${safeAge + Number(yr)})`}
+                        contentStyle={{
+                          backgroundColor: '#0f172a',
+                          borderColor: '#334155',
+                          borderRadius: '12px',
+                          color: '#fff',
+                          fontSize: '12px'
+                        }}
+                      />
+                      <Area type="monotone" dataKey="portfolio" stroke="#10b981" strokeWidth={3} fill="url(#portfolioGrad)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+
+          </div>
+
+        </div>
+
+        {/* 🚀 RECOMMENDED NEXT STEPS (Caltiger SaaS Feature Block) */}
+        <section className={`p-8 rounded-3xl border ${
+          isDark ? 'bg-gradient-to-br from-[#0f172a] to-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+        } space-y-6`}>
+          
+          <div className="flex items-center gap-2">
+            <Rocket className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-base font-black text-slate-100 uppercase tracking-wider">
+              🚀 Recommended Next Steps
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            {/* MariBank Referral Card */}
+            <a
+              href="https://maribank.ph/c/earnfreemoney?referralCode=BM284604"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-5 rounded-2xl bg-slate-950 border border-emerald-500/40 hover:border-emerald-400 transition-all group flex flex-col justify-between space-y-3 shadow-lg shadow-emerald-500/5"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                    🏦 Digital Banking Safety Net
+                  </span>
+                  <ExternalLink className="w-4 h-4 text-emerald-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-100 group-hover:text-emerald-300 transition-colors">
+                  MariBank High-Yield Savings (4.5% p.a.)
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Park your {formatCurrency(emergencyFund)} emergency reserve & earn high daily interest credited directly to your mobile account.
+                </p>
+              </div>
+
+              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                <span className="text-slate-400 font-semibold">Use Referral Code: <strong className="text-emerald-400 font-black">BM284604</strong></span>
+                <span className="text-emerald-400 font-bold underline">Claim Bonus →</span>
+              </div>
+            </a>
+
+            {/* Pag-IBIG MP2 & S&P 500 Guide */}
+            <a
+              href="https://www.pagibigfund.gov.ph"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500/50 transition-all group flex flex-col justify-between space-y-3"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-black text-indigo-400 uppercase tracking-wider flex items-center gap-1">
+                    📈 Wealth Building Engine
+                  </span>
+                  <ExternalLink className="w-4 h-4 text-slate-500 group-hover:text-indigo-400 transition-colors" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-100 group-hover:text-indigo-300 transition-colors">
+                  Pag-IBIG MP2 & S&P 500 Automation
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Automate your {formatCurrency(investAmount)}/mo wealth allocation into tax-free government MP2 savings & global index funds.
+                </p>
+              </div>
+
+              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                <span className="text-slate-400 font-semibold">Historical ROI: <strong className="text-indigo-400 font-bold">7.0% - 10.0% p.a.</strong></span>
+                <span className="text-indigo-400 font-bold underline">Read Guide →</span>
+              </div>
+            </a>
+
+          </div>
+
+        </section>
+
+        {/* SEO FAQ ACCORDION SECTION */}
+        <section className={`p-6 sm:p-8 rounded-3xl border ${
+          isDark ? 'bg-[#0f172a]/40 border-slate-800/80' : 'bg-white border-slate-200 shadow-sm'
+        }`}>
+          <div className="mb-6 flex items-center gap-2">
+            <HelpCircle className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-base font-bold text-slate-100">
+              Frequently Asked Questions (FAQ) - 50/20/30 FIRE Framework
+            </h2>
+          </div>
+
+          <div className="space-y-3">
+            {FAQS.map((faq, index) => (
+              <div key={index} className="border border-slate-800/80 rounded-2xl overflow-hidden bg-slate-950/60">
+                <button
+                  onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                  className="w-full p-4 text-left font-bold text-xs text-slate-200 flex justify-between items-center gap-4 hover:bg-slate-900/60 transition-colors"
+                >
+                  <span>{faq.q}</span>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${openFaqIndex === index ? 'rotate-180 text-emerald-400' : ''}`} />
+                </button>
+                {openFaqIndex === index && (
+                  <div className="px-4 pb-4 text-xs text-slate-400 leading-relaxed border-t border-slate-800/60 pt-3">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+      </main>
+
+      {/* CALTIGER-STYLE ONBOARDING WIZARD MODAL */}
+      {showWizardModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          <div className={`relative w-full max-w-xl p-8 rounded-3xl border shadow-2xl space-y-6 ${
+            isDark ? 'bg-[#0f172a] border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
+          }`}>
+            
+            <button
+              onClick={() => setShowWizardModal(false)}
+              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-black">
+                  <Flame className="w-4.5 h-4.5 fill-slate-950" />
+                </div>
+                <span className="font-black text-base">HowToRetire.info</span>
+              </div>
+              <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
                 Step {onboardingStep} of 2
               </div>
             </div>
 
-            {/* Progress Bar */}
-            <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
-              <div
-                className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full transition-all duration-500 rounded-full"
-                style={{ width: onboardingStep === 1 ? '50%' : '100%' }}
-              />
-            </div>
-
-            {/* STEP 1: Name and Age */}
             {onboardingStep === 1 && (
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-bold mb-3">
-                    <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                    30-Second Retirement Quiz
-                  </div>
-                  <h2 className="text-2xl font-black tracking-tight text-slate-100">
-                    Let’s Calculate Your Freedom Number ⚡
-                  </h2>
+                  <h3 className="text-xl font-black text-slate-100">
+                    Personalize Your Freedom Score 👤
+                  </h3>
                   <p className="text-xs text-slate-400 mt-1">
-                    First, tell us a little bit about yourself to tailor your timeline.
+                    Enter your name and current age to calibrate your FIRE timeline.
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1.5 uppercase tracking-wider">
-                      <User className="w-4 h-4 text-emerald-400" />
-                      What is your Name?
-                    </label>
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Your Name</label>
                     <input
                       type="text"
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
                       placeholder="e.g. Alex"
-                      className={`w-full px-4 py-3.5 text-sm font-semibold rounded-2xl border outline-none transition-all ${
-                        isDark ? 'bg-slate-950 border-slate-800 text-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20' : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
+                      className={`w-full px-4 py-3.5 text-sm font-bold rounded-2xl border outline-none ${
+                        isDark ? 'bg-slate-950 border-slate-800 text-slate-100 focus:border-emerald-500' : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
                       }`}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1.5 uppercase tracking-wider">
-                      <Calendar className="w-4 h-4 text-indigo-400" />
-                      What is your Current Age?
-                    </label>
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Current Age</label>
                     <input
                       type="number"
                       min="18"
                       max="80"
                       value={currentAge || ''}
                       onChange={(e) => setCurrentAge(e.target.value === '' ? '' : Math.max(18, parseInt(e.target.value) || 18))}
-                      className={`w-full px-4 py-3.5 text-sm font-semibold rounded-2xl border outline-none transition-all ${
-                        isDark ? 'bg-slate-950 border-slate-800 text-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20' : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
+                      className={`w-full px-4 py-3.5 text-sm font-bold rounded-2xl border outline-none ${
+                        isDark ? 'bg-slate-950 border-slate-800 text-slate-100 focus:border-emerald-500' : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
                       }`}
                       placeholder="25"
                     />
@@ -422,89 +1187,68 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
 
                 <button
                   onClick={() => setOnboardingStep(2)}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/25 active:scale-[0.99]"
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
                 >
-                  Next: Income & Savings <ArrowRight className="w-4 h-4" />
+                  Next Step →
                 </button>
               </div>
             )}
 
-            {/* STEP 2: Monthly Salary and Current Savings */}
             {onboardingStep === 2 && (
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold mb-3">
-                    <Rocket className="w-3.5 h-3.5" />
-                    Almost Done!
-                  </div>
-                  <h2 className="text-2xl font-black tracking-tight text-slate-100">
-                    Your Starting Financial Fuel 💰
-                  </h2>
+                  <h3 className="text-xl font-black text-slate-100">
+                    Income & Starting Nest Egg 💰
+                  </h3>
                   <p className="text-xs text-slate-400 mt-1">
-                    Enter your monthly net take-home salary and current savings balance.
+                    Enter your monthly take-home salary and current savings balance.
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1.5 uppercase tracking-wider">
-                      <Wallet className="w-4 h-4 text-emerald-400" />
-                      Monthly Net Take-Home Pay
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-500 text-lg">
-                        {currencySymbol}
-                      </span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="500"
-                        value={monthlyIncome || ''}
-                        onChange={(e) => setMonthlyIncome(e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0))}
-                        className={`w-full pl-10 pr-4 py-3.5 text-lg font-bold rounded-2xl border outline-none transition-all ${
-                          isDark ? 'bg-slate-950 border-slate-800 text-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20' : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
-                        }`}
-                        placeholder="25,000"
-                      />
-                    </div>
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Monthly Net Income</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="500"
+                      value={monthlyIncome || ''}
+                      onChange={(e) => setMonthlyIncome(e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0))}
+                      className={`w-full px-4 py-3.5 text-lg font-bold rounded-2xl border outline-none ${
+                        isDark ? 'bg-slate-950 border-slate-800 text-slate-100 focus:border-emerald-500' : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
+                      }`}
+                      placeholder="45,000"
+                    />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1.5 uppercase tracking-wider">
-                      <ShieldCheck className="w-4 h-4 text-blue-400" />
-                      Current Savings / Starting Nest Egg
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-500 text-lg">
-                        {currencySymbol}
-                      </span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="1000"
-                        value={currentSavings || ''}
-                        onChange={(e) => setCurrentSavings(e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0))}
-                        className={`w-full pl-10 pr-4 py-3.5 text-lg font-bold rounded-2xl border outline-none transition-all ${
-                          isDark ? 'bg-slate-950 border-slate-800 text-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20' : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
-                        }`}
-                        placeholder="25,000"
-                      />
-                    </div>
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Current Savings</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1000"
+                      value={currentSavings || ''}
+                      onChange={(e) => setCurrentSavings(e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0))}
+                      className={`w-full px-4 py-3.5 text-lg font-bold rounded-2xl border outline-none ${
+                        isDark ? 'bg-slate-950 border-slate-800 text-slate-100 focus:border-emerald-500' : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
+                      }`}
+                      placeholder="50,000"
+                    />
                   </div>
                 </div>
 
                 <div className="flex gap-3">
                   <button
                     onClick={() => setOnboardingStep(1)}
-                    className="px-5 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all"
+                    className="px-4 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs"
                   >
                     Back
                   </button>
                   <button
-                    onClick={() => setHasCompletedOnboarding(true)}
-                    className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/25 active:scale-[0.99]"
+                    onClick={() => setShowWizardModal(false)}
+                    className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
                   >
-                    Calculate Freedom Roadmap 🚀
+                    Calculate Freedom Score 🚀
                   </button>
                 </div>
               </div>
@@ -512,700 +1256,26 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
 
           </div>
         </div>
-      ) : (
-        /* STEP 3: VIRAL & EXECUTIVE DASHBOARD */
-        <>
-          <header className={`border-b sticky top-0 z-30 backdrop-blur-md ${isDark ? 'bg-slate-950/90 border-slate-800' : 'bg-white/90 border-slate-200'}`}>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-              
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-black shadow-md shadow-emerald-500/20">
-                  <Flame className="w-4 h-4" />
-                </div>
-                <div>
-                  <h1 className="text-base font-extrabold tracking-tight flex items-center gap-2">
-                    HowToRetire<span className="text-emerald-400">.info</span>
-                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                      🔥 FIRE Model
-                    </span>
-                  </h1>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    setOnboardingStep(1);
-                    setHasCompletedOnboarding(false);
-                  }}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 flex items-center gap-1.5 transition-all"
-                  title="Recalculate"
-                >
-                  <RotateCcw className="w-3.5 h-3.5 text-emerald-400" />
-                  Recalculate
-                </button>
-
-                <button
-                  onClick={() => {
-                    setIsSubmitted(false);
-                    setIsModalOpen(true);
-                  }}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all shadow-md shadow-emerald-500/20 flex items-center gap-1.5"
-                >
-                  <Printer className="w-3.5 h-3.5" />
-                  Download PDF
-                </button>
-
-                <button
-                  onClick={handleCopySummary}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all border ${
-                    copied
-                      ? 'bg-emerald-600 text-white border-emerald-500'
-                      : isDark
-                      ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800'
-                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
-                  }`}
-                >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Share2 className="w-3.5 h-3.5 text-emerald-400" />}
-                  {copied ? 'Copied Brag Link!' : 'Share Score'}
-                </button>
-
-                <button
-                  onClick={() => setIsDark(!isDark)}
-                  className={`p-2 rounded-xl border transition-all ${
-                    isDark
-                      ? 'bg-slate-900 border-slate-800 text-amber-400 hover:bg-slate-800'
-                      : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
-                  }`}
-                  title="Toggle theme"
-                >
-                  {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                </button>
-              </div>
-
-            </div>
-          </header>
-
-          {/* Viral Welcome Banner with Freedom Score Gauge */}
-          <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-indigo-950 border-b border-emerald-500/20 py-4 px-4">
-            <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-black text-lg shrink-0">
-                  ⚡
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-slate-100">
-                      Welcome, {userName || 'Future Retiree'}!
-                    </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                      FIRE Score: {freedomScore}/100 🚀
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-300 mt-0.5">
-                    At {formatCurrency(investAmount)}/mo investing, you are projected to reach financial freedom at <strong>Age {targetAge}</strong> ({yearsToFire} years)!
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 shrink-0">
-                <button
-                  onClick={handleCopySummary}
-                  className="px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-bold flex items-center gap-1.5 transition-all"
-                >
-                  <Share2 className="w-3.5 h-3.5" />
-                  Share Freedom Score
-                </button>
-                <button
-                  onClick={() => {
-                    setIsSubmitted(false);
-                    setIsModalOpen(true);
-                  }}
-                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md shadow-emerald-500/20"
-                >
-                  Download Printable PDF <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
-            
-            {/* VIRAL HERO KPI CARDS */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              
-              <div className={`p-6 rounded-2xl border transition-all ${
-                isDark ? 'bg-slate-900/80 border-slate-800 shadow-lg shadow-emerald-500/5' : 'bg-white border-slate-200 shadow-sm'
-              }`}>
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    🎯 FIRE Target Goal
-                  </span>
-                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
-                    <Flame className="w-4 h-4" />
-                  </div>
-                </div>
-                <div className="text-3xl font-black text-slate-100 tracking-tight">
-                  {formatCurrency(fireTargetGoal)}
-                </div>
-                <div className="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
-                  <Info className="w-3 h-3 text-emerald-400 shrink-0" />
-                  Rule of 300: Income ({formatCurrency(safeIncome)}) × 300
-                </div>
-              </div>
-
-              <div className={`p-6 rounded-2xl border transition-all ${
-                isDark ? 'bg-slate-900/80 border-slate-800 shadow-lg shadow-blue-500/5' : 'bg-white border-slate-200 shadow-sm'
-              }`}>
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    🛡️ Safety Reserve
-                  </span>
-                  <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                </div>
-                <div className="text-3xl font-black text-slate-100 tracking-tight">
-                  {formatCurrency(emergencyFund)}
-                </div>
-                <div className="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
-                  <Info className="w-3 h-3 text-blue-400 shrink-0" />
-                  6 months of Needs ({formatCurrency(needsAmount)} × 6)
-                </div>
-              </div>
-
-              <div className={`p-6 rounded-2xl border transition-all ${
-                isDark ? 'bg-slate-900/80 border-slate-800 shadow-lg shadow-emerald-500/5' : 'bg-white border-slate-200 shadow-sm'
-              }`}>
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    💸 Monthly Investing
-                  </span>
-                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
-                    <TrendingUp className="w-4 h-4" />
-                  </div>
-                </div>
-                <div className="text-3xl font-black text-emerald-400 tracking-tight">
-                  {formatCurrency(investAmount)}<span className="text-xs text-slate-400 font-semibold">/mo</span>
-                </div>
-                <div className="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
-                  <Info className="w-3 h-3 text-emerald-400 shrink-0" />
-                  20% allocated to Pag-IBIG MP2 & S&P 500
-                </div>
-              </div>
-
-              <div className={`p-6 rounded-2xl border transition-all ${
-                isDark ? 'bg-slate-900/80 border-slate-800 shadow-lg shadow-indigo-500/5' : 'bg-white border-slate-200 shadow-sm'
-              }`}>
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    ⏱️ Horizon to FIRE
-                  </span>
-                  <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
-                    <Calendar className="w-4 h-4" />
-                  </div>
-                </div>
-                <div className="text-3xl font-black text-indigo-400 tracking-tight">
-                  {yearsToFire} <span className="text-xs text-slate-400 font-semibold">years</span>
-                </div>
-                <div className="mt-2 text-[11px] text-slate-400 flex items-center gap-1">
-                  <PartyPopper className="w-3 h-3 text-indigo-400 shrink-0" />
-                  Retire at Age {targetAge} ({effectiveReturnRate}% net ROI)
-                </div>
-              </div>
-
-            </div>
-
-            {/* MAIN CALCULATOR CONTROLS & GRAPH */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              
-              <div className="lg:col-span-5 space-y-6">
-                
-                <div className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <label className="text-xs font-extrabold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                      <Wallet className="w-4 h-4 text-emerald-400" />
-                      Monthly Net Take-Home
-                    </label>
-                    <div className="flex items-center bg-slate-950 rounded-xl p-1 border border-slate-800 text-xs">
-                      <button
-                        onClick={() => setCurrencySymbol('₱')}
-                        className={`px-2.5 py-1 rounded-lg font-bold transition-all ${currencySymbol === '₱' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400'}`}
-                      >
-                        ₱ PHP
-                      </button>
-                      <button
-                        onClick={() => setCurrencySymbol('$')}
-                        className={`px-2.5 py-1 rounded-lg font-bold transition-all ${currencySymbol === '$' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400'}`}
-                      >
-                        $ USD
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="relative mb-4">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-500">
-                      {currencySymbol}
-                    </span>
-                    <input
-                      type="number"
-                      min="0"
-                      step="500"
-                      value={monthlyIncome || ''}
-                      onChange={(e) => setMonthlyIncome(e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0))}
-                      className={`w-full pl-12 pr-4 py-3.5 text-2xl font-black rounded-2xl border transition-all outline-none ${
-                        isDark
-                          ? 'bg-slate-950 border-slate-800 text-slate-100 focus:border-emerald-500'
-                          : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
-                      }`}
-                      placeholder="25,000"
-                    />
-                  </div>
-
-                  <div className="flex justify-between text-xs text-slate-400 mb-5 pb-3 border-b border-slate-800">
-                    <span>Annual Income Equivalent:</span>
-                    <span className="font-bold text-slate-200">{formatCurrency(annualIncome)}/yr</span>
-                  </div>
-
-                  <div className="space-y-1.5 mb-6">
-                    <div className="flex justify-between text-[11px] text-slate-500">
-                      <span>{currencySymbol}10,000</span>
-                      <span className="font-semibold text-slate-300">{formatCurrency(safeIncome)}</span>
-                      <span>{currencySymbol}300,000</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="10000"
-                      max="300000"
-                      step="2500"
-                      value={safeIncome}
-                      onChange={(e) => setMonthlyIncome(Number(e.target.value))}
-                      className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                    />
-                  </div>
-
-                  <div>
-                    <span className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                      <Briefcase className="w-3.5 h-3.5 text-indigo-400" />
-                      Philippine Career Benchmarks
-                    </span>
-                    <div className="space-y-2">
-                      {SALARY_BENCHMARKS.map((preset) => (
-                        <button
-                          key={preset.value}
-                          onClick={() => setMonthlyIncome(preset.value)}
-                          className={`w-full px-3.5 py-2.5 rounded-xl text-xs text-left transition-all border flex items-center justify-between ${
-                            safeIncome === preset.value
-                              ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400 font-bold'
-                              : isDark
-                              ? 'bg-slate-950 hover:bg-slate-800 text-slate-400 border-slate-800'
-                              : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
-                          }`}
-                        >
-                          <div>
-                            <div className="font-bold text-slate-200">{preset.label}</div>
-                            <div className="text-[11px] text-slate-400">{preset.desc}</div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-extrabold text-emerald-400">{currencySymbol}{(preset.value / 1000).toFixed(0)}k/mo</div>
-                            <div className="text-[10px] text-slate-500">({currencySymbol}${(preset.annual / 1000000).toFixed(2)}M/yr)</div>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <label className="text-xs font-extrabold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                      <Sliders className="w-4 h-4 text-indigo-400" />
-                      Budget Allocation Ratios
-                    </label>
-                    <button
-                      onClick={() => {
-                        setCustomMode(!customMode);
-                        if (customMode) {
-                          setNeedsPct(50);
-                          setWantsPct(30);
-                          setInvestPct(20);
-                        }
-                      }}
-                      className={`text-[11px] px-2.5 py-1 rounded-lg font-bold transition-all border ${
-                        customMode
-                          ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40'
-                          : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'
-                      }`}
-                    >
-                      {customMode ? 'Custom' : 'Standard 50/30/20'}
-                    </button>
-                  </div>
-
-                  {!customMode ? (
-                    <div className="text-xs text-slate-400 leading-relaxed bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
-                      <span className="font-bold text-slate-200 block mb-1">50/20/30 Budget Breakdown:</span>
-                      <span className="text-blue-400 font-semibold">50% Needs</span> ({formatCurrency(needsAmount)}) • <span className="text-amber-400 font-semibold">30% Wants</span> ({formatCurrency(wantsAmount)}) • <span className="text-emerald-400 font-semibold">20% Investing</span> ({formatCurrency(investAmount)})
-                    </div>
-                  ) : (
-                    <div className="space-y-4 pt-1">
-                      <div>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="text-blue-400 font-semibold">Needs ({needsPct}%):</span>
-                          <span className="font-bold text-slate-200">{formatCurrency(needsAmount)}</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="30"
-                          max="70"
-                          value={needsPct}
-                          onChange={(e) => setNeedsPct(Number(e.target.value))}
-                          className="w-full h-1.5 bg-slate-800 rounded appearance-none accent-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="text-amber-400 font-semibold">Wants ({wantsPct}%):</span>
-                          <span className="font-bold text-slate-200">{formatCurrency(wantsAmount)}</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="10"
-                          max="50"
-                          value={wantsPct}
-                          onChange={(e) => setWantsPct(Number(e.target.value))}
-                          className="w-full h-1.5 bg-slate-800 rounded appearance-none accent-amber-500"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="text-emerald-400 font-semibold">Investing ({investPct}%):</span>
-                          <span className="font-bold text-slate-200">{formatCurrency(investAmount)}</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="5"
-                          max="60"
-                          value={investPct}
-                          onChange={(e) => setInvestPct(Number(e.target.value))}
-                          className="w-full h-1.5 bg-slate-800 rounded appearance-none accent-emerald-500"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-                  <span className="block text-xs font-extrabold uppercase tracking-wider text-slate-300 mb-4">
-                    Growth & ROI Assumptions
-                  </span>
-
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-400">Current Savings / Portfolio:</span>
-                        <span className="font-semibold text-slate-200">{formatCurrency(safeSavings)}</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="0"
-                        max="500000"
-                        step="5000"
-                        value={safeSavings}
-                        onChange={(e) => setCurrentSavings(Number(e.target.value))}
-                        className="w-full h-1.5 bg-slate-800 rounded appearance-none accent-emerald-500"
-                      />
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-400">Annual Return Rate (ROI):</span>
-                        <span className="font-bold text-emerald-400">{annualReturnRate}% p.a.</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="4"
-                        max="12"
-                        step="0.5"
-                        value={annualReturnRate}
-                        onChange={(e) => setAnnualReturnRate(Number(e.target.value))}
-                        className="w-full h-1.5 bg-slate-800 rounded appearance-none accent-emerald-500"
-                      />
-                    </div>
-
-                    <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
-                      <label className="text-xs text-slate-300 flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={adjustForInflation}
-                          onChange={(e) => setAdjustForInflation(e.target.checked)}
-                          className="rounded accent-emerald-500"
-                        />
-                        Adjust for Inflation ({inflationRate}% p.a.)
-                      </label>
-                      <span className="text-xs font-bold text-slate-400">
-                        Net ROI: {effectiveReturnRate}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-              <div className="lg:col-span-7 space-y-6">
-
-                <div className="flex border-b border-slate-800 gap-6">
-                  <button
-                    onClick={() => setActiveTab('breakdown')}
-                    className={`pb-3 text-xs font-bold flex items-center gap-2 border-b-2 transition-all ${
-                      activeTab === 'breakdown'
-                        ? 'border-emerald-500 text-emerald-400'
-                        : 'border-transparent text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <PieIcon className="w-4 h-4" />
-                    Monthly Cash Flow
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('fire')}
-                    className={`pb-3 text-xs font-bold flex items-center gap-2 border-b-2 transition-all ${
-                      activeTab === 'fire'
-                        ? 'border-emerald-500 text-emerald-400'
-                        : 'border-transparent text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <LineIcon className="w-4 h-4" />
-                    FIRE Accumulation Path ({yearsToFire} yrs)
-                  </button>
-                </div>
-
-                {activeTab === 'breakdown' && (
-                  <div className="space-y-6">
-                    
-                    <div className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
-                          Cash Flow Distribution
-                        </span>
-                        <span className="text-xs font-bold text-slate-200">
-                          Total Take-Home: {formatCurrency(safeIncome)}
-                        </span>
-                      </div>
-
-                      <div className="h-4 w-full bg-slate-950 rounded-xl overflow-hidden flex border border-slate-800 mb-6">
-                        <div
-                          style={{ width: `${activeNeedsPct}%` }}
-                          className="bg-blue-500 transition-all duration-300 relative flex items-center justify-center text-[10px] font-black text-white"
-                        >
-                          {activeNeedsPct >= 15 && `50% Needs`}
-                        </div>
-                        <div
-                          style={{ width: `${activeWantsPct}%` }}
-                          className="bg-amber-500 transition-all duration-300 relative flex items-center justify-center text-[10px] font-black text-slate-950"
-                        >
-                          {activeWantsPct >= 15 && `30% Wants`}
-                        </div>
-                        <div
-                          style={{ width: `${activeInvestPct}%` }}
-                          className="bg-emerald-500 transition-all duration-300 relative flex items-center justify-center text-[10px] font-black text-slate-950"
-                        >
-                          {activeInvestPct >= 15 && `20% Invest`}
-                        </div>
-                      </div>
-
-                      <div className="divide-y divide-slate-800/60">
-                        <div className="py-3.5 flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-3.5 h-3.5 rounded-full bg-blue-500" />
-                            <div>
-                              <div className="text-xs font-bold text-slate-200">Living Needs ({activeNeedsPct}%)</div>
-                              <div className="text-[11px] text-slate-400">Rent, groceries, utilities, health, transport</div>
-                            </div>
-                          </div>
-                          <div className="text-sm font-black text-slate-100">{formatCurrency(needsAmount)}<span className="text-xs text-slate-400 font-normal">/mo</span></div>
-                        </div>
-
-                        <div className="py-3.5 flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-3.5 h-3.5 rounded-full bg-amber-500" />
-                            <div>
-                              <div className="text-xs font-bold text-slate-200">Discretionary Wants ({activeWantsPct}%)</div>
-                              <div className="text-[11px] text-slate-400">Dining, entertainment, subscriptions, hobbies</div>
-                            </div>
-                          </div>
-                          <div className="text-sm font-black text-slate-100">{formatCurrency(wantsAmount)}<span className="text-xs text-slate-400 font-normal">/mo</span></div>
-                        </div>
-
-                        <div className="py-3.5 flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-3.5 h-3.5 rounded-full bg-emerald-500" />
-                            <div>
-                              <div className="text-xs font-bold text-slate-200">Wealth Building ({activeInvestPct}%)</div>
-                              <div className="text-[11px] text-slate-400">Pag-IBIG MP2, S&P 500, REITs, emergency fund</div>
-                            </div>
-                          </div>
-                          <div className="text-sm font-black text-emerald-400">{formatCurrency(investAmount)}<span className="text-xs text-slate-400 font-normal">/mo</span></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200 shadow-sm'} flex flex-col md:flex-row items-center gap-6`}>
-                      <div className="w-full md:w-1/2 h-56 relative">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={pieData}
-                              cx="50%"
-                              cy="50%"
-                              innerRadius={55}
-                              outerRadius={80}
-                              paddingAngle={3}
-                              dataKey="value"
-                            >
-                              {pieData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} />
-                              ))}
-                            </Pie>
-                            <RechartsTooltip
-                              formatter={(value) => formatCurrency(value)}
-                              contentStyle={{
-                                backgroundColor: '#0f172a',
-                                borderColor: '#334155',
-                                borderRadius: '8px',
-                                color: '#fff',
-                                fontSize: '12px'
-                              }}
-                            />
-                          </PieChart>
-                        </ResponsiveContainer>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                          <span className="text-[10px] text-slate-400 uppercase font-bold">Monthly Invest</span>
-                          <span className="text-base font-black text-emerald-400">{formatCurrency(investAmount)}</span>
-                        </div>
-                      </div>
-
-                      <div className="w-full md:w-1/2 space-y-3">
-                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">
-                          Target Financial Benchmarks
-                        </span>
-                        <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
-                          <div className="text-slate-400 mb-0.5">FIRE Goal (Rule of 300):</div>
-                          <div className="text-base font-black text-slate-100">{formatCurrency(fireTargetGoal)}</div>
-                        </div>
-                        <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
-                          <div className="text-slate-400 mb-0.5">6-Month Safety Net Reserve:</div>
-                          <div className="text-base font-black text-slate-100">{formatCurrency(emergencyFund)}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-                )}
-
-                {activeTab === 'fire' && (
-                  <div className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200 shadow-sm'} space-y-4`}>
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-100">
-                          Portfolio Accumulation Curve
-                        </h3>
-                        <p className="text-xs text-slate-400">
-                          Accumulating {formatCurrency(fireTargetGoal)} with {formatCurrency(investAmount)}/mo at {effectiveReturnRate}% net ROI.
-                        </p>
-                      </div>
-
-                      <div className="px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
-                        Target: ~{yearsToFire} Years
-                      </div>
-                    </div>
-
-                    <div className="h-64 w-full pt-2">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={projectionData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                          <defs>
-                            <linearGradient id="portfolioGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
-                              <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                          <XAxis dataKey="year" stroke="#64748b" fontSize={11} tickFormatter={(v) => `Yr ${v}`} />
-                          <YAxis stroke="#64748b" fontSize={11} tickFormatter={(v) => `${currencySymbol}${(v / 1000000).toFixed(1)}M`} />
-                          <RechartsTooltip
-                            formatter={(val) => formatCurrency(val)}
-                            labelFormatter={(yr) => `Year ${yr} (Age ${safeAge + Number(yr)})`}
-                            contentStyle={{
-                              backgroundColor: '#0f172a',
-                              borderColor: '#334155',
-                              borderRadius: '8px',
-                              color: '#fff',
-                              fontSize: '12px'
-                            }}
-                          />
-                          <Area type="monotone" dataKey="portfolio" stroke="#10b981" strokeWidth={2.5} fill="url(#portfolioGrad)" />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                )}
-
-              </div>
-
-            </div>
-
-            {/* SEO FAQ ACCORDION SECTION */}
-            <section className={`p-6 sm:p-8 rounded-2xl border ${isDark ? 'bg-slate-900/40 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-              <div className="mb-6 flex items-center gap-2">
-                <HelpCircle className="w-5 h-5 text-emerald-400" />
-                <h2 className="text-base font-bold text-slate-100">
-                  Frequently Asked Questions (FAQ) - 50/20/30 FIRE Framework
-                </h2>
-              </div>
-
-              <div className="space-y-3">
-                {FAQS.map((faq, index) => (
-                  <div key={index} className="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/60">
-                    <button
-                      onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
-                      className="w-full p-4 text-left font-semibold text-xs text-slate-200 flex justify-between items-center gap-4 hover:bg-slate-900/60 transition-colors"
-                    >
-                      <span>{faq.q}</span>
-                      <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${openFaqIndex === index ? 'rotate-180 text-emerald-400' : ''}`} />
-                    </button>
-                    {openFaqIndex === index && (
-                      <div className="px-4 pb-4 text-xs text-slate-400 leading-relaxed border-t border-slate-800/60 pt-3">
-                        {faq.a}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
-
-          </main>
-        </>
       )}
 
       {/* LEAD GENERATION & PDF REPORT MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className={`relative w-full max-w-lg p-6 rounded-3xl border shadow-2xl transition-all ${
-            isDark ? 'bg-slate-900 border-slate-700 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
+      {isPdfModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          <div className={`relative w-full max-w-lg p-7 rounded-3xl border shadow-2xl transition-all ${
+            isDark ? 'bg-[#0f172a] border-slate-700 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
           }`}>
             
             <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all"
+              onClick={() => setIsPdfModalOpen(false)}
+              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all"
             >
               <X className="w-5 h-5" />
             </button>
 
             {!isSubmitted ? (
               <div className="space-y-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400">
                     <Printer className="w-5 h-5" />
                   </div>
                   <div>
@@ -1219,7 +1289,7 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
                 </div>
 
                 <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2 text-xs">
-                  <div className="font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
+                  <div className="font-bold text-slate-300 mb-1 flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                     What’s included in your official PDF:
                   </div>
@@ -1233,14 +1303,14 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
 
                 <form onSubmit={handleLeadSubmit} className="space-y-3">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-400 mb-1">Email Address <span className="text-emerald-400">*</span></label>
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Email Address <span className="text-emerald-400">*</span></label>
                     <input
                       type="email"
                       required
                       value={emailInput}
                       onChange={(e) => setEmailInput(e.target.value)}
                       placeholder="alex@example.com"
-                      className={`w-full px-4 py-3 text-xs rounded-xl border outline-none ${
+                      className={`w-full px-4 py-3.5 text-xs rounded-2xl border outline-none ${
                         isDark ? 'bg-slate-950 border-slate-700 text-slate-100 focus:border-emerald-500' : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
                       }`}
                     />
@@ -1249,7 +1319,7 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? (
                       <span>Preparing Official PDF...</span>
@@ -1282,15 +1352,17 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
 
                 <button
                   onClick={handlePrintPDF}
-                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
                 >
                   <Printer className="w-4 h-4" />
                   Open & Save Official PDF Document
                 </button>
 
+                {/* Caltiger Next Steps inside Modal */}
                 <div className="pt-4 border-t border-slate-800 text-left space-y-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-                    🚀 Recommended Next Steps
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 block flex items-center gap-1.5">
+                    <Rocket className="w-3.5 h-3.5 text-emerald-400" />
+                    🚀 RECOMMENDED NEXT STEPS
                   </span>
 
                   <div className="grid grid-cols-1 gap-2 text-xs">
@@ -1298,14 +1370,14 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
                       href="https://maribank.ph/c/earnfreemoney?referralCode=BM284604"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 rounded-xl bg-slate-950 border border-emerald-500/40 hover:border-emerald-400 transition-all flex items-center justify-between group shadow-sm shadow-emerald-500/10"
+                      className="p-3.5 rounded-2xl bg-slate-950 border border-emerald-500/40 hover:border-emerald-400 transition-all flex items-center justify-between group"
                     >
                       <div>
-                        <div className="font-semibold text-emerald-400 group-hover:text-emerald-300 transition-colors flex items-center gap-1.5">
+                        <div className="font-bold text-emerald-400 group-hover:text-emerald-300 transition-colors flex items-center gap-1.5">
                           MariBank (High-Yield 4.5% p.a. Savings)
                           <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
                         </div>
-                        <div className="text-[11px] text-slate-400">Park your {formatCurrency(emergencyFund)} safety net & earn daily interest (Code: BM284604)</div>
+                        <div className="text-[11px] text-slate-400">Park your {formatCurrency(emergencyFund)} safety net (Code: BM284604)</div>
                       </div>
                     </a>
 
@@ -1313,10 +1385,10 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
                       href="https://www.pagibigfund.gov.ph"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-emerald-500/50 transition-all flex items-center justify-between group"
+                      className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500/50 transition-all flex items-center justify-between group"
                     >
                       <div>
-                        <div className="font-semibold text-slate-200 group-hover:text-emerald-400 transition-colors flex items-center gap-1.5">
+                        <div className="font-bold text-slate-200 group-hover:text-emerald-400 transition-colors flex items-center gap-1.5">
                           Pag-IBIG MP2 & S&P 500 Starter Guide
                           <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
                         </div>
@@ -1335,14 +1407,14 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
 
       {/* LEGAL DISCLAIMER MODAL */}
       {isLegalModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className={`relative w-full max-w-xl p-6 rounded-3xl border shadow-2xl transition-all ${
-            isDark ? 'bg-slate-900 border-slate-700 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          <div className={`relative w-full max-w-xl p-7 rounded-3xl border shadow-2xl transition-all ${
+            isDark ? 'bg-[#0f172a] border-slate-700 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
           }`}>
             
             <button
               onClick={() => setIsLegalModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all"
+              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all"
             >
               <X className="w-5 h-5" />
             </button>
@@ -1406,7 +1478,7 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
             <div className="mt-5 pt-4 border-t border-slate-800 flex justify-end">
               <button
                 onClick={() => setIsLegalModalOpen(false)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-all"
+                className="px-4 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-all"
               >
                 I Understand & Agree
               </button>
@@ -1416,11 +1488,11 @@ Calculate your retirement freedom score on HowToRetire.info 🚀`;
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800/60 mt-16 py-8 text-xs text-slate-500">
+      {/* FOOTER */}
+      <footer className="border-t border-slate-800/80 mt-16 py-8 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="space-y-1 text-center md:text-left">
-            <div className="font-semibold text-slate-400">HowToRetire.info</div>
+            <div className="font-bold text-slate-400">HowToRetire.info</div>
             <div className="text-[11px] text-slate-600">© {new Date().getFullYear()} HowToRetire.info • 50/20/30 FIRE & Budgeting Framework.</div>
           </div>
 
