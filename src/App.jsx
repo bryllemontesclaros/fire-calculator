@@ -55,6 +55,9 @@ const SALARY_BENCHMARKS = [
   { label: 'Director / Executive', value: 250000, annual: 3000000, desc: 'Director / Offshore Tech / VP (₱250,000/mo)' },
 ];
 
+// Generate Age Options Array (18 to 75)
+const AGE_OPTIONS = Array.from({ length: 58 }, (_, i) => 18 + i);
+
 const FAQS = [
   {
     q: 'What is the 50/20/30 Budgeting Rule?',
@@ -730,7 +733,7 @@ export default function App() {
 
             </div>
 
-            {/* MAIN CALCULATOR CONTROLS & CHARTS (LOGICAL MOBILE/TABLET RESPONSIVE ORDER) */}
+            {/* MAIN CALCULATOR CONTROLS & CHARTS */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
               
               {/* LEFT COLUMN: INPUT CONTROLS */}
@@ -1219,7 +1222,7 @@ export default function App() {
                     Personal Profile 👤
                   </h3>
                   <p className="text-xs text-slate-400 mt-1">
-                    Enter your name and current age to calibrate your FIRE timeline.
+                    Enter your name and select your current age to calibrate your FIRE timeline.
                   </p>
                 </div>
 
@@ -1239,17 +1242,19 @@ export default function App() {
 
                   <div>
                     <label className="block text-xs font-bold text-slate-400 mb-1">Current Age</label>
-                    <input
-                      type="number"
-                      min="18"
-                      max="80"
-                      value={currentAge || ''}
-                      onChange={(e) => setCurrentAge(e.target.value === '' ? '' : Math.max(18, parseInt(e.target.value) || 18))}
-                      className={`w-full px-4 py-3.5 text-sm font-bold rounded-2xl border outline-none ${
+                    <select
+                      value={currentAge}
+                      onChange={(e) => setCurrentAge(Number(e.target.value))}
+                      className={`w-full px-4 py-3.5 text-sm font-bold rounded-2xl border outline-none cursor-pointer ${
                         isDark ? 'bg-slate-950 border-slate-800 text-slate-100 focus:border-emerald-500' : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-emerald-500'
                       }`}
-                      placeholder="25"
-                    />
+                    >
+                      {AGE_OPTIONS.map((age) => (
+                        <option key={age} value={age}>
+                          {age} Years Old
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
