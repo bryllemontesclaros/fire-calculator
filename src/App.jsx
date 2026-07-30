@@ -77,7 +77,7 @@ const FAQS = [
 export default function App() {
   const [isDark, setIsDark] = useState(true);
 
-  // Multi-page Navigation State
+  // Multi-page Navigation State ('landing' vs 'calculator')
   const [currentPage, setCurrentPage] = useState('landing');
 
   // Quick Setup Wizard Modal State
@@ -202,7 +202,7 @@ Monthly Take-Home: ${formatCurrency(safeIncome)} (Annual: ${formatCurrency(annua
     .subtitle { font-size: 12px; color: #059669; font-weight: 700; }
     .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
     .kpi-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; }
-    .kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #047857; }
+    .kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; }
     .kpi-value { font-size: 24px; font-weight: 800; color: #0f172a; margin-top: 4px; }
     .kpi-value-green { color: #059669; }
     .table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
@@ -354,15 +354,23 @@ Monthly Take-Home: ${formatCurrency(safeIncome)} (Annual: ${formatCurrency(annua
           </div>
 
           <div className="flex items-center gap-3">
-            {/* INSTANT DIRECT PDF DOWNLOAD BUTTON */}
-            <button
-              onClick={handlePrintPDF}
-              className="px-4 py-2 rounded-2xl text-xs font-extrabold bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 transition-all shadow-md shadow-emerald-500/20 flex items-center gap-1.5 active:scale-95"
-              title="Download & Print 1-Page PDF Strategy Document"
-            >
-              <Download className="w-3.5 h-3.5" />
-              Download PDF Report
-            </button>
+            {currentPage === 'landing' ? (
+              <button
+                onClick={() => setCurrentPage('calculator')}
+                className="px-4 py-2 rounded-2xl text-xs font-extrabold bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 transition-all shadow-md shadow-emerald-500/20 flex items-center gap-1.5 active:scale-95"
+              >
+                Open FIRE Calculator →
+              </button>
+            ) : (
+              <button
+                onClick={handlePrintPDF}
+                className="px-4 py-2 rounded-2xl text-xs font-extrabold bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 transition-all shadow-md shadow-emerald-500/20 flex items-center gap-1.5 active:scale-95"
+                title="Download 1-Page PDF Strategy Document"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Download PDF Report
+              </button>
+            )}
 
             <button
               onClick={() => setIsDark(!isDark)}
@@ -415,11 +423,14 @@ Monthly Take-Home: ${formatCurrency(safeIncome)} (Annual: ${formatCurrency(annua
                 </button>
 
                 <button
-                  onClick={handlePrintPDF}
+                  onClick={() => {
+                    setOnboardingStep(1);
+                    setShowWizardModal(true);
+                  }}
                   className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-extrabold text-xs transition-all flex items-center justify-center gap-2"
                 >
-                  <Download className="w-4 h-4 text-emerald-400" />
-                  Instant Download PDF Report
+                  <Zap className="w-4 h-4 text-emerald-400" />
+                  Take 30-Second Quick Setup
                 </button>
               </div>
 
